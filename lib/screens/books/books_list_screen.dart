@@ -31,7 +31,7 @@ class _BooksListScreenState extends State<BooksListScreen> {
   String _searchQuery = '';
   String? _selectedCategory;
   AvailabilityFilter _availabilityFilter = AvailabilityFilter.all;
-  BookSortOption _sortOption = BookSortOption.title;
+  final BookSortOption _sortOption = BookSortOption.title;
 
   @override
   Widget build(BuildContext context) {
@@ -48,35 +48,6 @@ class _BooksListScreenState extends State<BooksListScreen> {
                 onPressed: widget.onOpenDrawer,
               )
             : null,
-        actions: [
-          PopupMenuButton<BookSortOption>(
-            icon: const Icon(Icons.sort_rounded),
-            tooltip: l10n.sortBy,
-            onSelected: (val) {
-              setState(() {
-                _sortOption = val;
-              });
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: BookSortOption.title,
-                child: Text(l10n.sortByTitle),
-              ),
-              PopupMenuItem(
-                value: BookSortOption.author,
-                child: Text(l10n.sortByAuthor),
-              ),
-              PopupMenuItem(
-                value: BookSortOption.code,
-                child: Text(l10n.sortByCode),
-              ),
-              PopupMenuItem(
-                value: BookSortOption.availableCopies,
-                child: Text(l10n.sortByAvailable),
-              ),
-            ],
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'addBookFab',
@@ -211,32 +182,43 @@ class _BooksListScreenState extends State<BooksListScreen> {
 
               // Books List
               Expanded(
-                child: filteredBooks.isEmpty
-                    ? EmptyState(
-                        icon: Icons.menu_book_outlined,
-                        title: l10n.noRecentTransactions,
-                        subtitle: l10n.searchPersonNoResults,
-                        actionLabel: l10n.addBook,
-                        onAction: () => Navigator.pushNamed(context, AppRoutes.addEditBook),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filteredBooks.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final book = filteredBooks[index];
-                          return _BookCard(
-                            book: book,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.bookDetails,
-                                arguments: book,
-                              );
-                            },
-                          );
-                        },
-                      ),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await widget.bookRepository.getBooks();
+                  },
+                  child: filteredBooks.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            EmptyState(
+                              icon: Icons.menu_book_outlined,
+                              title: l10n.noRecentTransactions,
+                              subtitle: l10n.searchPersonNoResults,
+                              actionLabel: l10n.addBook,
+                              onAction: () => Navigator.pushNamed(context, AppRoutes.addEditBook),
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filteredBooks.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final book = filteredBooks[index];
+                            return _BookCard(
+                              book: book,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.bookDetails,
+                                  arguments: book,
+                                );
+                              },
+                            );
+                          },
+                        ),
+                ),
               ),
             ],
           );

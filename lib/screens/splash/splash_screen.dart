@@ -65,24 +65,29 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
-                  width: 104,
-                  height: 104,
+                  width: 108,
+                  height: 108,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
+                        color: Colors.black.withOpacity(0.2),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.local_library_rounded,
-                      size: 56,
-                      color: AppColors.primary,
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset(
+                    'assets/granthalay_logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Icon(
+                        Icons.local_library_rounded,
+                        size: 56,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),

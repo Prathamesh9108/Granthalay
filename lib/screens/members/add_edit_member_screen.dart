@@ -22,12 +22,10 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _codeController;
-  late final TextEditingController _nameMrController;
-  late final TextEditingController _nameEnController;
+  late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _addressController;
-  late final TextEditingController _deptController;
 
   bool _isLoading = false;
   bool get _isEditing => widget.memberToEdit != null;
@@ -37,23 +35,20 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
     super.initState();
     final m = widget.memberToEdit;
     _codeController = TextEditingController(text: m?.memberCode ?? 'M00${widget.memberRepository.members.length + 1}');
-    _nameMrController = TextEditingController(text: m?.nameMr ?? '');
-    _nameEnController = TextEditingController(text: m?.nameEn ?? '');
+    final initialName = m != null ? (m.nameMr.isNotEmpty ? m.nameMr : m.nameEn) : '';
+    _nameController = TextEditingController(text: initialName);
     _phoneController = TextEditingController(text: m?.phone ?? '');
     _emailController = TextEditingController(text: m?.email ?? '');
     _addressController = TextEditingController(text: m?.address ?? '');
-    _deptController = TextEditingController(text: m?.departmentClass ?? '');
   }
 
   @override
   void dispose() {
     _codeController.dispose();
-    _nameMrController.dispose();
-    _nameEnController.dispose();
+    _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
-    _deptController.dispose();
     super.dispose();
   }
 
@@ -62,31 +57,33 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    // Require at least one name
-    final hasName = _nameMrController.text.trim().isNotEmpty || _nameEnController.text.trim().isNotEmpty;
-    if (!hasName) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.nameRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
 
+    final enteredName = _nameController.text.trim();
+    String nameMr = enteredName;
+    String nameEn = enteredName;
+    if (_isEditing && widget.memberToEdit != null) {
+      final old = widget.memberToEdit!;
+      if (enteredName == old.nameMr) {
+        nameMr = old.nameMr;
+        nameEn = old.nameEn.isNotEmpty ? old.nameEn : enteredName;
+      } else if (enteredName == old.nameEn) {
+        nameMr = old.nameMr.isNotEmpty ? old.nameMr : enteredName;
+        nameEn = old.nameEn;
+      }
+    }
+
     final member = Member(
       id: widget.memberToEdit?.id ?? '',
       memberCode: _codeController.text.trim(),
-      nameMr: _nameMrController.text.trim(),
-      nameEn: _nameEnController.text.trim(),
+      nameMr: nameMr,
+      nameEn: nameEn,
       phone: _phoneController.text.trim(),
       email: _emailController.text.trim(),
       address: _addressController.text.trim(),
-      departmentClass: _deptController.text.trim(),
+      departmentClass: widget.memberToEdit?.departmentClass ?? '',
       registeredDate: widget.memberToEdit?.registeredDate ?? DateTime.now(),
     );
 
@@ -159,24 +156,21 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
 
               const SizedBox(height: 20),
 
-              // Full Name (Marathi & English)
-              _buildSectionTitle(l10n.memberNameMarathi),
+              // Full Name
+              _buildSectionTitle(l10n.fullName),
               TextFormField(
-                controller: _nameMrController,
+                controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: l10n.memberNameMarathi,
-                  hintText: 'उदा. राहुल पाटील',
+                  labelText: l10n.fullName,
+                  hintText: l10n.fullNameHint,
                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _nameEnController,
-                decoration: InputDecoration(
-                  labelText: l10n.memberNameEnglish,
-                  hintText: 'e.g. Rahul Patil',
-                  prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
-                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return l10n.fullNameRequired;
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 20),
@@ -211,17 +205,8 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
 
               const SizedBox(height: 20),
 
-              // Department & Address
-              _buildSectionTitle(l10n.departmentClass),
-              TextFormField(
-                controller: _deptController,
-                decoration: InputDecoration(
-                  labelText: l10n.departmentClass,
-                  hintText: 'उदा. कला शाखा / B.A. Marathi',
-                  prefixIcon: const Icon(Icons.school_outlined, color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(height: 12),
+              // Address
+              _buildSectionTitle(l10n.address),
               TextFormField(
                 controller: _addressController,
                 maxLines: 2,

@@ -156,15 +156,23 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
     required AppLocalizations l10n,
     required bool showReturnBtn,
   }) {
-    if (records.isEmpty) {
-      return EmptyState(
-        icon: Icons.assignment_outlined,
-        title: emptyTitle,
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await widget.borrowingRepository.getAllRecords();
+      },
+      child: records.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                EmptyState(
+                  icon: Icons.assignment_outlined,
+                  title: emptyTitle,
+                ),
+              ],
+            )
+          : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
       itemCount: records.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, i) {
@@ -279,6 +287,7 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
           ),
         );
       },
+    ),
     );
   }
 }

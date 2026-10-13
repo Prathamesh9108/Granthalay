@@ -166,8 +166,18 @@ class _MemberDetailsScreenState extends State<MemberDetailsScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final refreshed = await widget.memberRepository.getMemberById(_member.id);
+          if (refreshed != null && mounted) {
+            setState(() {
+              _member = refreshed;
+            });
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -368,8 +378,15 @@ class _MemberDetailsScreenState extends State<MemberDetailsScreen> {
                   ),
                   const Divider(height: 20),
                   _DetailRow(label: l10n.memberCode, value: _member.memberCode),
-                  _DetailRow(label: l10n.memberNameMarathi, value: _member.nameMr.isNotEmpty ? _member.nameMr : '-'),
-                  _DetailRow(label: l10n.memberNameEnglish, value: _member.nameEn.isNotEmpty ? _member.nameEn : '-'),
+                  if (_member.nameMr.isNotEmpty && _member.nameEn.isNotEmpty && _member.nameMr != _member.nameEn) ...[
+                    _DetailRow(label: l10n.memberNameMarathi, value: _member.nameMr),
+                    _DetailRow(label: l10n.memberNameEnglish, value: _member.nameEn),
+                  ] else ...[
+                    _DetailRow(
+                      label: l10n.fullName,
+                      value: _member.displayName(locale).isNotEmpty ? _member.displayName(locale) : '-',
+                    ),
+                  ],
                   _DetailRow(label: l10n.phoneNumber, value: _member.phone),
                   _DetailRow(label: l10n.emailAddress, value: _member.email.isNotEmpty ? _member.email : '-'),
                   _DetailRow(label: l10n.address, value: _member.address.isNotEmpty ? _member.address : '-'),
@@ -381,7 +398,8 @@ class _MemberDetailsScreenState extends State<MemberDetailsScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

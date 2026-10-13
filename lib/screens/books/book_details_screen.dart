@@ -121,8 +121,18 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final refreshed = await widget.bookRepository.getBookById(_book.id);
+          if (refreshed != null && mounted) {
+            setState(() {
+              _book = refreshed;
+            });
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -216,10 +226,24 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                   ),
                   const Divider(height: 24),
                   _DetailRow(label: l10n.bookCode, value: _book.bookCode),
-                  _DetailRow(label: l10n.titleMarathi, value: _book.titleMr.isNotEmpty ? _book.titleMr : '-'),
-                  _DetailRow(label: l10n.titleEnglish, value: _book.titleEn.isNotEmpty ? _book.titleEn : '-'),
-                  _DetailRow(label: l10n.authorMarathi, value: _book.authorMr.isNotEmpty ? _book.authorMr : '-'),
-                  _DetailRow(label: l10n.authorEnglish, value: _book.authorEn.isNotEmpty ? _book.authorEn : '-'),
+                  if (_book.titleMr.isNotEmpty && _book.titleEn.isNotEmpty && _book.titleMr != _book.titleEn) ...[
+                    _DetailRow(label: l10n.titleMarathi, value: _book.titleMr),
+                    _DetailRow(label: l10n.titleEnglish, value: _book.titleEn),
+                  ] else ...[
+                    _DetailRow(
+                      label: l10n.bookTitle,
+                      value: _book.displayTitle(locale).isNotEmpty ? _book.displayTitle(locale) : '-',
+                    ),
+                  ],
+                  if (_book.authorMr.isNotEmpty && _book.authorEn.isNotEmpty && _book.authorMr != _book.authorEn) ...[
+                    _DetailRow(label: l10n.authorMarathi, value: _book.authorMr),
+                    _DetailRow(label: l10n.authorEnglish, value: _book.authorEn),
+                  ] else ...[
+                    _DetailRow(
+                      label: l10n.author,
+                      value: _book.displayAuthor(locale).isNotEmpty ? _book.displayAuthor(locale) : '-',
+                    ),
+                  ],
                   _DetailRow(label: l10n.category, value: _book.category),
                   _DetailRow(label: l10n.isbn, value: _book.isbn.isNotEmpty ? _book.isbn : '-'),
                   _DetailRow(label: l10n.publisher, value: _book.publisher.isNotEmpty ? _book.publisher : '-'),
@@ -233,7 +257,8 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

@@ -108,15 +108,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer.withOpacity(0.6),
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.12),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.local_library_rounded,
-                            size: 44,
-                            color: AppColors.primary,
+                          clipBehavior: Clip.antiAlias,
+                          child: Image.asset(
+                            'assets/granthalay_logo.png',
+                            fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(height: 16),

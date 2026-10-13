@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @libraryName.
   ///
   /// In mr, this message translates to:
-  /// **'शासकीय सार्वजनिक वाचनालय'**
+  /// **'वसंत दादाश्री जिनवाणी महाग्रंथालय'**
   String get libraryName;
 
   /// No description provided for @demoModeNotice.
@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardTitle.
   ///
   /// In mr, this message translates to:
-  /// **'वाचनालय डॅशबोर्ड'**
+  /// **'डॅशबोर्ड'**
   String get dashboardTitle;
 
   /// No description provided for @totalBooks.
@@ -410,6 +410,42 @@ abstract class AppLocalizations {
   /// **'पुस्तक संकेतांक'**
   String get bookCode;
 
+  /// No description provided for @bookTitle.
+  ///
+  /// In mr, this message translates to:
+  /// **'पुस्तकाचे नाव'**
+  String get bookTitle;
+
+  /// No description provided for @bookTitleHint.
+  ///
+  /// In mr, this message translates to:
+  /// **'उदा. मृत्युंजय / Mrityunjay'**
+  String get bookTitleHint;
+
+  /// No description provided for @bookTitleRequired.
+  ///
+  /// In mr, this message translates to:
+  /// **'कृपया पुस्तकाचे नाव प्रविष्ट करा'**
+  String get bookTitleRequired;
+
+  /// No description provided for @author.
+  ///
+  /// In mr, this message translates to:
+  /// **'लेखक'**
+  String get author;
+
+  /// No description provided for @authorHint.
+  ///
+  /// In mr, this message translates to:
+  /// **'उदा. शिवाजी सावंत / Shivaji Sawant'**
+  String get authorHint;
+
+  /// No description provided for @bookAuthorRequired.
+  ///
+  /// In mr, this message translates to:
+  /// **'कृपया लेखकाचे नाव प्रविष्ट करा'**
+  String get bookAuthorRequired;
+
   /// No description provided for @titleMarathi.
   ///
   /// In mr, this message translates to:
@@ -523,6 +559,24 @@ abstract class AppLocalizations {
   /// In mr, this message translates to:
   /// **'सभासद संकेतांक'**
   String get memberCode;
+
+  /// No description provided for @fullName.
+  ///
+  /// In mr, this message translates to:
+  /// **'पूर्ण नाव'**
+  String get fullName;
+
+  /// No description provided for @fullNameHint.
+  ///
+  /// In mr, this message translates to:
+  /// **'उदा. राहुल पाटील / Rahul Patil'**
+  String get fullNameHint;
+
+  /// No description provided for @fullNameRequired.
+  ///
+  /// In mr, this message translates to:
+  /// **'कृपया पूर्ण नाव प्रविष्ट करा'**
+  String get fullNameRequired;
 
   /// No description provided for @memberNameMarathi.
   ///
@@ -881,7 +935,7 @@ abstract class AppLocalizations {
   /// No description provided for @languagePreference.
   ///
   /// In mr, this message translates to:
-  /// **'भाषा निवडा / Interface Language'**
+  /// **'भाषा निवडा'**
   String get languagePreference;
 
   /// No description provided for @marathiLanguage.
@@ -905,20 +959,62 @@ abstract class AppLocalizations {
   /// No description provided for @libraryInfo.
   ///
   /// In mr, this message translates to:
-  /// **'वाचनालय माहिती'**
+  /// **'ग्रंथालय माहिती'**
   String get libraryInfo;
 
   /// No description provided for @libraryAddress.
   ///
   /// In mr, this message translates to:
-  /// **'मध्यवर्ती ग्रंथालय भवन, शिवाजी नगर, पुणे'**
+  /// **'कोथळी, ता. शिरोळ जि. कोल्हापूर (महाराष्ट्र)'**
   String get libraryAddress;
 
   /// No description provided for @libraryContact.
   ///
   /// In mr, this message translates to:
-  /// **'+९१ २० २५६० १२३४'**
+  /// **'निलेश: 9011441477, सचिन: 9075086108'**
   String get libraryContact;
+
+  /// No description provided for @granthalayDetails.
+  ///
+  /// In mr, this message translates to:
+  /// **'ग्रंथालय माहिती'**
+  String get granthalayDetails;
+
+  /// No description provided for @establishment.
+  ///
+  /// In mr, this message translates to:
+  /// **'स्थापना: 18-06-2018'**
+  String get establishment;
+
+  /// No description provided for @locationVillage.
+  ///
+  /// In mr, this message translates to:
+  /// **'कोथळी'**
+  String get locationVillage;
+
+  /// No description provided for @locationTalukaDist.
+  ///
+  /// In mr, this message translates to:
+  /// **'ता. शिरोळ जि. कोल्हापूर (महाराष्ट्र)'**
+  String get locationTalukaDist;
+
+  /// No description provided for @contact.
+  ///
+  /// In mr, this message translates to:
+  /// **'संपर्क'**
+  String get contact;
+
+  /// No description provided for @contactNilesh.
+  ///
+  /// In mr, this message translates to:
+  /// **'निलेश 9011441477'**
+  String get contactNilesh;
+
+  /// No description provided for @contactSachin.
+  ///
+  /// In mr, this message translates to:
+  /// **'सचिन 9075086108'**
+  String get contactSachin;
 
   /// No description provided for @appVersion.
   ///

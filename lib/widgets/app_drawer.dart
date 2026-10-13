@@ -32,12 +32,24 @@ class AppDrawer extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    width: 54,
+                    height: 54,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.local_library_rounded, size: 36, color: Colors.white),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      'assets/granthalay_logo.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(

@@ -148,13 +148,23 @@ class _BorrowingHistoryScreenState extends State<BorrowingHistoryScreen> {
 
               // Records List
               Expanded(
-                child: filteredRecords.isEmpty
-                    ? EmptyState(
-                        icon: Icons.history_edu_outlined,
-                        title: l10n.noHistoryFound,
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await widget.borrowingRepository.getAllRecords();
+                  },
+                  child: filteredRecords.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            EmptyState(
+                              icon: Icons.history_edu_outlined,
+                              title: l10n.noHistoryFound,
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
                         itemCount: filteredRecords.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (context, i) {
@@ -278,6 +288,7 @@ class _BorrowingHistoryScreenState extends State<BorrowingHistoryScreen> {
                           );
                         },
                       ),
+                ),
               ),
             ],
           );

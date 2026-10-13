@@ -16,7 +16,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appSubtitle => 'Library Management System';
 
   @override
-  String get libraryName => 'Central Public Library';
+  String get libraryName => 'Vasant Dadashree Jinwani Mahagranthalay';
 
   @override
   String get demoModeNotice => 'Demo Mode Active (Local Data)';
@@ -71,7 +71,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirm => 'Are you sure you want to log out?';
 
   @override
-  String get dashboardTitle => 'Library Dashboard';
+  String get dashboardTitle => 'Dashboard';
 
   @override
   String get totalBooks => 'Total Books';
@@ -169,6 +169,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookCode => 'Book Code';
 
   @override
+  String get bookTitle => 'Book Title';
+
+  @override
+  String get bookTitleHint => 'e.g. Mrityunjay / Wings of Fire';
+
+  @override
+  String get bookTitleRequired => 'Please enter book title';
+
+  @override
+  String get author => 'Author';
+
+  @override
+  String get authorHint => 'e.g. Shivaji Sawant / A.P.J. Abdul Kalam';
+
+  @override
+  String get bookAuthorRequired => 'Please enter author name';
+
+  @override
   String get titleMarathi => 'Marathi Title';
 
   @override
@@ -228,6 +246,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get memberCode => 'Member Code';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get fullNameHint => 'e.g. Rahul Patil';
+
+  @override
+  String get fullNameRequired => 'Please enter full name';
 
   @override
   String get memberNameMarathi => 'Full Name in Marathi';
@@ -422,7 +449,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
-  String get languagePreference => 'Interface Language / भाषा निवडा';
+  String get languagePreference => 'Select Language';
 
   @override
   String get marathiLanguage => 'मराठी (Marathi)';
@@ -434,13 +461,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageChangedMsg => 'Language updated successfully.';
 
   @override
-  String get libraryInfo => 'Library Information';
+  String get libraryInfo => 'Granthalay Details';
 
   @override
-  String get libraryAddress => 'Central Library Building, Shivaji Nagar, Pune';
+  String get libraryAddress =>
+      'Kothali, Tal. Shirol, Dist. Kolhapur (Maharashtra)';
 
   @override
-  String get libraryContact => '+91 20 2560 1234';
+  String get libraryContact => 'Nilesh: 9011441477, Sachin: 9075086108';
+
+  @override
+  String get granthalayDetails => 'Granthalay Details';
+
+  @override
+  String get establishment => 'Established: 18-06-2018';
+
+  @override
+  String get locationVillage => 'Kothali';
+
+  @override
+  String get locationTalukaDist => 'Tal. Shirol, Dist. Kolhapur (Maharashtra)';
+
+  @override
+  String get contact => 'Contact';
+
+  @override
+  String get contactNilesh => 'Nilesh: 9011441477';
+
+  @override
+  String get contactSachin => 'Sachin: 9075086108';
 
   @override
   String get appVersion => 'App Version';

@@ -23,10 +23,8 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _codeController;
-  late final TextEditingController _titleMrController;
-  late final TextEditingController _titleEnController;
-  late final TextEditingController _authorMrController;
-  late final TextEditingController _authorEnController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _authorController;
   late final TextEditingController _isbnController;
   late final TextEditingController _publisherController;
   late final TextEditingController _yearController;
@@ -43,10 +41,10 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
     super.initState();
     final b = widget.bookToEdit;
     _codeController = TextEditingController(text: b?.bookCode ?? 'BK-${DateTime.now().millisecondsSinceEpoch % 1000}');
-    _titleMrController = TextEditingController(text: b?.titleMr ?? '');
-    _titleEnController = TextEditingController(text: b?.titleEn ?? '');
-    _authorMrController = TextEditingController(text: b?.authorMr ?? '');
-    _authorEnController = TextEditingController(text: b?.authorEn ?? '');
+    final initialTitle = b != null ? (b.titleMr.isNotEmpty ? b.titleMr : b.titleEn) : '';
+    final initialAuthor = b != null ? (b.authorMr.isNotEmpty ? b.authorMr : b.authorEn) : '';
+    _titleController = TextEditingController(text: initialTitle);
+    _authorController = TextEditingController(text: initialAuthor);
     _isbnController = TextEditingController(text: b?.isbn ?? '');
     _publisherController = TextEditingController(text: b?.publisher ?? '');
     _yearController = TextEditingController(text: b != null && b.publicationYear > 0 ? b.publicationYear.toString() : '');
@@ -58,10 +56,8 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
   @override
   void dispose() {
     _codeController.dispose();
-    _titleMrController.dispose();
-    _titleEnController.dispose();
-    _authorMrController.dispose();
-    _authorEnController.dispose();
+    _titleController.dispose();
+    _authorController.dispose();
     _isbnController.dispose();
     _publisherController.dispose();
     _yearController.dispose();
@@ -75,29 +71,6 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    // Requirement: at least one book name and one author name required
-    final hasTitle = _titleMrController.text.trim().isNotEmpty || _titleEnController.text.trim().isNotEmpty;
-    if (!hasTitle) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.nameRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    final hasAuthor = _authorMrController.text.trim().isNotEmpty || _authorEnController.text.trim().isNotEmpty;
-    if (!hasAuthor) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.authorRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
@@ -106,13 +79,42 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
     final availableCopies = int.tryParse(_availableCopiesController.text.trim()) ?? totalCopies;
     final publicationYear = int.tryParse(_yearController.text.trim()) ?? 0;
 
+    final enteredTitle = _titleController.text.trim();
+    final enteredAuthor = _authorController.text.trim();
+
+    String titleMr = enteredTitle;
+    String titleEn = enteredTitle;
+    if (_isEditing && widget.bookToEdit != null) {
+      final old = widget.bookToEdit!;
+      if (enteredTitle == old.titleMr) {
+        titleMr = old.titleMr;
+        titleEn = old.titleEn.isNotEmpty ? old.titleEn : enteredTitle;
+      } else if (enteredTitle == old.titleEn) {
+        titleMr = old.titleMr.isNotEmpty ? old.titleMr : enteredTitle;
+        titleEn = old.titleEn;
+      }
+    }
+
+    String authorMr = enteredAuthor;
+    String authorEn = enteredAuthor;
+    if (_isEditing && widget.bookToEdit != null) {
+      final old = widget.bookToEdit!;
+      if (enteredAuthor == old.authorMr) {
+        authorMr = old.authorMr;
+        authorEn = old.authorEn.isNotEmpty ? old.authorEn : enteredAuthor;
+      } else if (enteredAuthor == old.authorEn) {
+        authorMr = old.authorMr.isNotEmpty ? old.authorMr : enteredAuthor;
+        authorEn = old.authorEn;
+      }
+    }
+
     final book = Book(
       id: widget.bookToEdit?.id ?? '',
       bookCode: _codeController.text.trim(),
-      titleMr: _titleMrController.text.trim(),
-      titleEn: _titleEnController.text.trim(),
-      authorMr: _authorMrController.text.trim(),
-      authorEn: _authorEnController.text.trim(),
+      titleMr: titleMr,
+      titleEn: titleEn,
+      authorMr: authorMr,
+      authorEn: authorEn,
       category: _selectedCategory,
       isbn: _isbnController.text.trim(),
       publisher: _publisherController.text.trim(),
@@ -190,46 +192,40 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
 
               const SizedBox(height: 20),
 
-              // Title Section (Marathi & English)
-              _buildSectionTitle(l10n.sortByTitle),
+              // Book Title Section
+              _buildSectionTitle(l10n.bookTitle),
               TextFormField(
-                controller: _titleMrController,
+                controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: l10n.titleMarathi,
-                  hintText: 'उदा. मृत्युंजय',
+                  labelText: l10n.bookTitle,
+                  hintText: l10n.bookTitleHint,
                   prefixIcon: const Icon(Icons.title_rounded, color: AppColors.primary),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _titleEnController,
-                decoration: InputDecoration(
-                  labelText: l10n.titleEnglish,
-                  hintText: 'e.g. Mrityunjay',
-                  prefixIcon: const Icon(Icons.title_rounded, color: AppColors.primary),
-                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return l10n.bookTitleRequired;
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 20),
 
-              // Author Section (Marathi & English)
-              _buildSectionTitle(l10n.sortByAuthor),
+              // Author Section
+              _buildSectionTitle(l10n.author),
               TextFormField(
-                controller: _authorMrController,
+                controller: _authorController,
                 decoration: InputDecoration(
-                  labelText: l10n.authorMarathi,
-                  hintText: 'उदा. शिवाजी सावंत',
+                  labelText: l10n.author,
+                  hintText: l10n.authorHint,
                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _authorEnController,
-                decoration: InputDecoration(
-                  labelText: l10n.authorEnglish,
-                  hintText: 'e.g. Shivaji Sawant',
-                  prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
-                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return l10n.bookAuthorRequired;
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 20),
