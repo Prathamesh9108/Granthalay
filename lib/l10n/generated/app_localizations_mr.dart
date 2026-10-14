@@ -16,7 +16,7 @@ class AppLocalizationsMr extends AppLocalizations {
   String get appSubtitle => 'वाचनालय व्यवस्थापन प्रणाली';
 
   @override
-  String get libraryName => 'शासकीय सार्वजनिक वाचनालय';
+  String get libraryName => 'वसंत दादाश्री जिनवाणी महाग्रंथालय';
 
   @override
   String get demoModeNotice => 'डेमो मोड सक्रिय (स्थानिक डेटा)';
@@ -72,7 +72,7 @@ class AppLocalizationsMr extends AppLocalizations {
       'तुम्हाला खात्री आहे की तुम्ही बाहेर पडू इच्छिता?';
 
   @override
-  String get dashboardTitle => 'वाचनालय डॅशबोर्ड';
+  String get dashboardTitle => 'डॅशबोर्ड';
 
   @override
   String get totalBooks => 'एकूण पुस्तके';
@@ -170,6 +170,24 @@ class AppLocalizationsMr extends AppLocalizations {
   String get bookCode => 'पुस्तक संकेतांक';
 
   @override
+  String get bookTitle => 'पुस्तकाचे नाव';
+
+  @override
+  String get bookTitleHint => 'उदा. मृत्युंजय / Mrityunjay';
+
+  @override
+  String get bookTitleRequired => 'कृपया पुस्तकाचे नाव प्रविष्ट करा';
+
+  @override
+  String get author => 'लेखक';
+
+  @override
+  String get authorHint => 'उदा. शिवाजी सावंत / Shivaji Sawant';
+
+  @override
+  String get bookAuthorRequired => 'कृपया लेखकाचे नाव प्रविष्ट करा';
+
+  @override
   String get titleMarathi => 'मराठी नाव';
 
   @override
@@ -228,6 +246,15 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get memberCode => 'सभासद संकेतांक';
+
+  @override
+  String get fullName => 'पूर्ण नाव';
+
+  @override
+  String get fullNameHint => 'उदा. राहुल पाटील / Rahul Patil';
+
+  @override
+  String get fullNameRequired => 'कृपया पूर्ण नाव प्रविष्ट करा';
 
   @override
   String get memberNameMarathi => 'मराठीत पूर्ण नाव';
@@ -424,7 +451,7 @@ class AppLocalizationsMr extends AppLocalizations {
   String get settingsTitle => 'सेटिंग्ज';
 
   @override
-  String get languagePreference => 'भाषा निवडा / Interface Language';
+  String get languagePreference => 'भाषा निवडा';
 
   @override
   String get marathiLanguage => 'मराठी (Marathi)';
@@ -436,13 +463,34 @@ class AppLocalizationsMr extends AppLocalizations {
   String get languageChangedMsg => 'भाषा यशस्वीरित्या बदलली.';
 
   @override
-  String get libraryInfo => 'वाचनालय माहिती';
+  String get libraryInfo => 'ग्रंथालय माहिती';
 
   @override
-  String get libraryAddress => 'मध्यवर्ती ग्रंथालय भवन, शिवाजी नगर, पुणे';
+  String get libraryAddress => 'कोथळी, ता. शिरोळ जि. कोल्हापूर (महाराष्ट्र)';
 
   @override
-  String get libraryContact => '+९१ २० २५६० १२३४';
+  String get libraryContact => 'निलेश: 9011441477, सचिन: 9075086108';
+
+  @override
+  String get granthalayDetails => 'ग्रंथालय माहिती';
+
+  @override
+  String get establishment => 'स्थापना: 18-06-2018';
+
+  @override
+  String get locationVillage => 'कोथळी';
+
+  @override
+  String get locationTalukaDist => 'ता. शिरोळ जि. कोल्हापूर (महाराष्ट्र)';
+
+  @override
+  String get contact => 'संपर्क';
+
+  @override
+  String get contactNilesh => 'निलेश 9011441477';
+
+  @override
+  String get contactSachin => 'सचिन 9075086108';
 
   @override
   String get appVersion => 'अॅप आवृत्ती';

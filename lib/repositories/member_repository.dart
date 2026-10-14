@@ -64,7 +64,12 @@ class MemberRepositoryImpl extends ChangeNotifier implements MemberRepository {
     _errorMessage = null;
 
     try {
-      final response = await _apiService.get('/members');
+      dynamic response;
+      try {
+        response = await _apiService.get('/members/all');
+      } catch (_) {
+        response = await _apiService.get('/members');
+      }
       List<dynamic> items = [];
       if (response is List) {
         items = response;

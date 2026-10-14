@@ -288,16 +288,37 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
     } else {
       try {
         final response = await _apiService.get('/dashboard/statistics');
-        if (response != null) {
-          return DashboardStats.fromJson(response as Map<String, dynamic>);
+        if (response != null && response is Map<String, dynamic>) {
+          return DashboardStats.fromJson(response);
         }
       } catch (_) {
         try {
-          final response = await _apiService.get('/borrowings/stats');
-          if (response != null) {
-            return DashboardStats.fromJson(response as Map<String, dynamic>);
+          final response = await _apiService.get('/dashboard/stats');
+          if (response != null && response is Map<String, dynamic>) {
+            return DashboardStats.fromJson(response);
           }
         } catch (_) {}
+      }
+
+      // Fallback: calculate stats from loaded book and member lists
+      final books = _bookRepository.books;
+      final members = _memberRepository.members;
+      if (books.isNotEmpty || members.isNotEmpty) {
+        int totalCopies = 0;
+        int availableCopies = 0;
+        for (var b in books) {
+          totalCopies += b.totalCopies;
+          availableCopies += b.availableCopies;
+        }
+        return DashboardStats(
+          totalBooks: books.length,
+          totalCopies: totalCopies > 0 ? totalCopies : books.length,
+          availableCopies: availableCopies,
+          issuedBooks: (totalCopies - availableCopies) > 0 ? (totalCopies - availableCopies) : 0,
+          totalMembers: members.length,
+          overdueBooks: 0,
+          totalReturned: 0,
+        );
       }
       return DashboardStats.empty();
     }

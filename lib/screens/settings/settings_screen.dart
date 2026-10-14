@@ -70,8 +70,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               )
             : null,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) setState(() {});
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -101,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       l10n.marathiLanguage,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text('मराठी भाषा इंटरफेस (मराठीत आकडे व अक्षरे)'),
+                    subtitle: const Text('मराठी भाषा (मराठीत आकडे व अक्षरे)'),
                     value: 'mr',
                     groupValue: currentLocale.languageCode,
                     activeColor: AppColors.primary,
@@ -118,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       l10n.englishLanguage,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text('English language interface'),
+                    subtitle: const Text('English language'),
                     value: 'en',
                     groupValue: currentLocale.languageCode,
                     activeColor: AppColors.primary,
@@ -135,7 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 16),
 
-            // 2. Library Information Card
+
+
+            // 2. Granthalay Details Card
             CustomCard(
               padding: const EdgeInsets.all(18),
               child: Column(
@@ -143,10 +151,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppColors.primary, size: 22),
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.asset(
+                          'assets/granthalay_logo.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                       const SizedBox(width: 10),
                       Text(
-                        l10n.libraryInfo,
+                        l10n.granthalayDetails,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -156,9 +175,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const Divider(height: 24),
-                  _InfoItem(label: 'वाचनालय', value: l10n.libraryName),
-                  _InfoItem(label: l10n.address, value: l10n.libraryAddress),
-                  _InfoItem(label: l10n.phoneNumber, value: l10n.libraryContact),
+                  const _InfoItem(label: 'ग्रंथालय', value: 'वसंत दादाश्री जिनवाणी महाग्रंथालय'),
+                  const _InfoItem(label: 'स्थापना', value: '18-06-2018'),
+                  const _InfoItem(label: 'गाव', value: 'कोथळी'),
+                  const _InfoItem(label: 'पत्ता', value: 'ता. शिरोळ जि. कोल्हापूर (महाराष्ट्र)'),
+                  const SizedBox(height: 8),
+                  const Divider(height: 16),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(
+                      'संपर्क',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const _ContactRow(name: 'निलेश', phone: '9011441477'),
+                  const _ContactRow(name: 'सचिन', phone: '9075086108'),
+                  const Divider(height: 20),
                   _InfoItem(label: l10n.appVersion, value: AppConstants.appVersion),
                 ],
               ),
@@ -180,6 +216,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+    ),
+  );
+  }
+}
+
+class _ContactRow extends StatelessWidget {
+  final String name;
+  final String phone;
+
+  const _ContactRow({required this.name, required this.phone});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          const Icon(Icons.phone_outlined, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text(
+            '$name: ',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          ),
+          Text(
+            phone,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+          ),
+        ],
       ),
     );
   }

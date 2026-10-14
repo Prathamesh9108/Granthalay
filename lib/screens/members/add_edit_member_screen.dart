@@ -39,9 +39,8 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
     );
 
     // Initializing single name field with fallback
-    final initialName = m?.nameMr.isNotEmpty == true ? m!.nameMr : (m?.nameEn ?? '');
+    final initialName = m != null ? (m.nameMr.isNotEmpty ? m.nameMr : m.nameEn) : '';
     _nameController = TextEditingController(text: initialName);
-
     _phoneController = TextEditingController(text: m?.phone ?? '');
     _emailController = TextEditingController(text: m?.email ?? '');
     _addressController = TextEditingController(text: m?.address ?? '');
@@ -62,38 +61,30 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.nameRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    final phone = _phoneController.text.trim();
-    if (phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.phoneNumber),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
 
+    final enteredName = _nameController.text.trim();
+    String nameMr = enteredName;
+    String nameEn = enteredName;
+    if (_isEditing && widget.memberToEdit != null) {
+      final old = widget.memberToEdit!;
+      if (enteredName == old.nameMr) {
+        nameMr = old.nameMr;
+        nameEn = old.nameEn.isNotEmpty ? old.nameEn : enteredName;
+      } else if (enteredName == old.nameEn) {
+        nameMr = old.nameMr.isNotEmpty ? old.nameMr : enteredName;
+        nameEn = old.nameEn;
+      }
+    }
+
     final member = Member(
       id: widget.memberToEdit?.id ?? '',
       memberCode: _codeController.text.trim(),
-      nameMr: name,
-      nameEn: name,
-      phone: phone,
+      nameMr: nameMr,
+      nameEn: nameEn,
+      phone: _phoneController.text.trim(),
       email: _emailController.text.trim(),
       address: _addressController.text.trim(),
       departmentClass: widget.memberToEdit?.departmentClass ?? '',
@@ -179,17 +170,18 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Full Name (Single field)
+              // Full Name
+              _buildSectionTitle(l10n.fullName),
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: '${l10n.membersTitle.contains("सभासद") ? "पूर्ण नाव" : "Full Name"} *',
-                  hintText: 'उदा. राहुल पाटील / Rahul Patil',
+                  labelText: l10n.fullName,
+                  hintText: l10n.fullNameHint,
                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return l10n.nameRequired;
+                    return l10n.fullNameRequired;
                   }
                   return null;
                 },
@@ -265,6 +257,20 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
               const SizedBox(height: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary,
         ),
       ),
     );

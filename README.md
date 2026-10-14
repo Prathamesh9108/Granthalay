@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ग्रंथालय (Granthalay) — Library Management System (Flutter Frontend)
 
 **ग्रंथालय** is an Android-first, bilingual (मराठी & English) Library Management System frontend developed in Flutter and Dart using Material Design 3. It is designed to manage approximately 2,000 library books and provide daily operational tools for a library librarian.
@@ -214,7 +213,3 @@ To switch from Demo Mode to a live backend:
 2. Toggle off **Demo Mode**.
 3. Enter your Spring Boot Base URL (e.g., `http://10.0.2.2:8080/api` for emulator or `http://192.168.1.X:8080/api` for physical device).
 4. Tap **Test API Connection**.
-=======
-# Granthalay
-for library management system
->>>>>>> 1d807ce9539ba5e3b8a0c9bb25aab22d20f1fee7

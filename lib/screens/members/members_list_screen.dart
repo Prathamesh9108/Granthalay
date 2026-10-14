@@ -81,32 +81,41 @@ class _MembersListScreenState extends State<MembersListScreen> {
 
               // Members List
               Expanded(
-                child: filteredMembers.isEmpty
-                    ? EmptyState(
-                        icon: Icons.people_outline_rounded,
-                        title: l10n.membersTitle,
-                        subtitle: l10n.searchPersonNoResults,
-                        actionLabel: l10n.addMember,
-                        onAction: () => Navigator.pushNamed(context, AppRoutes.addEditMember),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filteredMembers.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final member = filteredMembers[index];
-                          return _MemberCard(
-                            member: member,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.memberDetails,
-                                arguments: member,
-                              );
-                            },
-                          );
-                        },
-                      ),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await widget.memberRepository.getMembers();
+                  },
+                  child: filteredMembers.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            EmptyState(
+                              icon: Icons.people_outline_rounded,
+                              title: l10n.membersTitle,
+                              subtitle: l10n.searchPersonNoResults,
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filteredMembers.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final member = filteredMembers[index];
+                            return _MemberCard(
+                              member: member,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.memberDetails,
+                                  arguments: member,
+                                );
+                              },
+                            );
+                          },
+                        ),
+                ),
               ),
             ],
           );

@@ -24,6 +24,8 @@ class TransactionsHubScreen extends StatefulWidget {
 
 class _TransactionsHubScreenState extends State<TransactionsHubScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   bool _isRefreshing = false;
 
   @override
@@ -38,7 +40,22 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  List<BorrowRecord> _filterRecords(List<BorrowRecord> list, Locale locale) {
+    if (_searchQuery.isEmpty) return list;
+    return list.where((r) {
+      final title = r.displayBookTitle(locale).toLowerCase();
+      final member = r.displayMemberName(locale).toLowerCase();
+      final bookCode = r.bookCode.toLowerCase();
+      final memberCode = r.memberCode.toLowerCase();
+      return title.contains(_searchQuery) ||
+          member.contains(_searchQuery) ||
+          bookCode.contains(_searchQuery) ||
+          memberCode.contains(_searchQuery);
+    }).toList();
   }
 
   Future<void> _fetchRecords() async {
@@ -157,46 +174,92 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
           ],
         ),
       ),
-      body: ListenableBuilder(
-        listenable: widget.borrowingRepository as Listenable,
-        builder: (context, _) {
-          final allRecords = widget.borrowingRepository.records;
-          final issuedRecords = allRecords.where((r) => !r.isReturned).toList();
-          final overdueRecords = allRecords.where((r) => r.isCurrentlyOverdue).toList();
-          final returnedRecords = allRecords.where((r) => r.isReturned).toList();
-
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              // Tab 1: Currently Issued
-              _buildRecordsList(
-                records: issuedRecords,
-                emptyTitle: l10n.noRecentTransactions,
-                locale: locale,
-                l10n: l10n,
-                showReturnBtn: true,
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: locale.languageCode == 'mr'
+                    ? 'पुस्तक, सभासद किंवा कोड शोधा...'
+                    : 'Search by book, member or code...',
+                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 20),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                ),
               ),
+              onChanged: (val) {
+                setState(() => _searchQuery = val.trim().toLowerCase());
+              },
+            ),
+          ),
+          Expanded(
+            child: ListenableBuilder(
+              listenable: widget.borrowingRepository as Listenable,
+              builder: (context, _) {
+                final allRecords = widget.borrowingRepository.records;
+                final issuedRecords = _filterRecords(allRecords.where((r) => !r.isReturned).toList(), locale);
+                final overdueRecords = _filterRecords(allRecords.where((r) => r.isCurrentlyOverdue).toList(), locale);
+                final returnedRecords = _filterRecords(allRecords.where((r) => r.isReturned).toList(), locale);
 
-              // Tab 2: Overdue
-              _buildRecordsList(
-                records: overdueRecords,
-                emptyTitle: 'कोणतेही पुस्तक मुदत संपलेले नाही',
-                locale: locale,
-                l10n: l10n,
-                showReturnBtn: true,
-              ),
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // Tab 1: Currently Issued
+                    _buildRecordsList(
+                      records: issuedRecords,
+                      emptyTitle: l10n.noRecentTransactions,
+                      locale: locale,
+                      l10n: l10n,
+                      showReturnBtn: true,
+                    ),
 
-              // Tab 3: Returned
-              _buildRecordsList(
-                records: returnedRecords,
-                emptyTitle: l10n.noRecentTransactions,
-                locale: locale,
-                l10n: l10n,
-                showReturnBtn: false,
-              ),
-            ],
-          );
-        },
+                    // Tab 2: Overdue
+                    _buildRecordsList(
+                      records: overdueRecords,
+                      emptyTitle: 'कोणतेही पुस्तक मुदत संपलेले नाही',
+                      locale: locale,
+                      l10n: l10n,
+                      showReturnBtn: true,
+                    ),
+
+                    // Tab 3: Returned
+                    _buildRecordsList(
+                      records: returnedRecords,
+                      emptyTitle: l10n.noRecentTransactions,
+                      locale: locale,
+                      l10n: l10n,
+                      showReturnBtn: false,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -209,22 +272,19 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
     required bool showReturnBtn,
   }) {
     return RefreshIndicator(
-      onRefresh: _fetchRecords,
+      onRefresh: () async {
+        await widget.borrowingRepository.getAllRecords();
+      },
       child: records.isEmpty
-          ? LayoutBuilder(
-              builder: (context, constraints) => SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Center(
-                    child: EmptyState(
-                      icon: Icons.assignment_outlined,
-                      title: emptyTitle,
-                      subtitle: 'पुस्तके देण्यासाठी किंवा जमा करण्यासाठी वरील बटणे वापरा',
-                    ),
-                  ),
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                EmptyState(
+                  icon: Icons.assignment_outlined,
+                  title: emptyTitle,
+                  subtitle: 'पुस्तके देण्यासाठी किंवा जमा करण्यासाठी वरील बटणे वापरा',
                 ),
-              ),
+              ],
             )
           : ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),

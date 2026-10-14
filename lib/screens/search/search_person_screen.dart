@@ -135,14 +135,25 @@ class _SearchPersonScreenState extends State<SearchPersonScreen> {
 
               // Matching Results
               Expanded(
-                child: matchingMembers.isEmpty
-                    ? EmptyState(
-                        icon: Icons.person_search_rounded,
-                        title: l10n.searchPersonNoResults,
-                        subtitle: 'वेगळा शब्द, कोड किंवा इंग्रजी नाव वापरून शोधा.',
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await widget.memberRepository.getMembers();
+                    await widget.borrowingRepository.getAllRecords();
+                  },
+                  child: matchingMembers.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            EmptyState(
+                              icon: Icons.person_search_rounded,
+                              title: l10n.searchPersonNoResults,
+                              subtitle: 'वेगळा शब्द, कोड किंवा इंग्रजी नाव वापरून शोधा.',
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
                         itemCount: matchingMembers.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (context, i) {
@@ -276,6 +287,7 @@ class _SearchPersonScreenState extends State<SearchPersonScreen> {
                           );
                         },
                       ),
+                ),
               ),
             ],
           );

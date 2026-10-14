@@ -108,15 +108,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer.withOpacity(0.6),
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.12),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.local_library_rounded,
-                            size: 44,
-                            color: AppColors.primary,
+                          clipBehavior: Clip.antiAlias,
+                          child: Image.asset(
+                            'assets/granthalay_logo.png',
+                            fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -260,33 +267,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       l10n.loginButton,
                                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                                     ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Demo hint
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(Icons.info_outline, size: 16, color: AppColors.info),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    l10n.demoLoginHint,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ],

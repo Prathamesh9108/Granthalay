@@ -65,8 +65,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+          : RefreshIndicator(
+              onRefresh: _loadStats,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -272,6 +275,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               ),
             ),
+          ),
     );
   }
 }

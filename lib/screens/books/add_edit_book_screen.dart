@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../models/book.dart';
 import '../../repositories/book_repository.dart';
@@ -26,12 +25,9 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _authorController;
   late final TextEditingController _isbnController;
-  late final TextEditingController _publisherController;
-  late final TextEditingController _yearController;
   late final TextEditingController _totalCopiesController;
   late final TextEditingController _availableCopiesController;
 
-  late String _selectedCategory;
   bool _isLoading = false;
 
   bool get _isEditing => widget.bookToEdit != null;
@@ -45,24 +41,17 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
     );
 
     // Initializing single title and author with fallback
-    final initialTitle = b?.titleMr.isNotEmpty == true ? b!.titleMr : (b?.titleEn ?? '');
+    final initialTitle = b != null ? (b.titleMr.isNotEmpty ? b.titleMr : b.titleEn) : '';
+    final initialAuthor = b != null ? (b.authorMr.isNotEmpty ? b.authorMr : b.authorEn) : '';
     _titleController = TextEditingController(text: initialTitle);
-
-    final initialAuthor = b?.authorMr.isNotEmpty == true ? b!.authorMr : (b?.authorEn ?? '');
     _authorController = TextEditingController(text: initialAuthor);
-
     _isbnController = TextEditingController(text: b?.isbn ?? '');
-    _publisherController = TextEditingController(text: b?.publisher ?? '');
-    _yearController = TextEditingController(
-      text: b != null && b.publicationYear > 0 ? b.publicationYear.toString() : '',
-    );
     _totalCopiesController = TextEditingController(
       text: b?.totalCopies.toString() ?? '5',
     );
     _availableCopiesController = TextEditingController(
       text: b?.availableCopies.toString() ?? '5',
     );
-    _selectedCategory = b?.category ?? AppConstants.bookCategories.first;
   }
 
   @override
@@ -71,8 +60,6 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
     _titleController.dispose();
     _authorController.dispose();
     _isbnController.dispose();
-    _publisherController.dispose();
-    _yearController.dispose();
     _totalCopiesController.dispose();
     _availableCopiesController.dispose();
     super.dispose();
@@ -83,47 +70,53 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.nameRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    final author = _authorController.text.trim();
-    if (author.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.authorRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
 
     final totalCopies = int.tryParse(_totalCopiesController.text.trim()) ?? 1;
     final availableCopies = int.tryParse(_availableCopiesController.text.trim()) ?? totalCopies;
-    final publicationYear = int.tryParse(_yearController.text.trim()) ?? 0;
+
+    final enteredTitle = _titleController.text.trim();
+    final enteredAuthor = _authorController.text.trim();
+
+    String titleMr = enteredTitle;
+    String titleEn = enteredTitle;
+    if (_isEditing && widget.bookToEdit != null) {
+      final old = widget.bookToEdit!;
+      if (enteredTitle == old.titleMr) {
+        titleMr = old.titleMr;
+        titleEn = old.titleEn.isNotEmpty ? old.titleEn : enteredTitle;
+      } else if (enteredTitle == old.titleEn) {
+        titleMr = old.titleMr.isNotEmpty ? old.titleMr : enteredTitle;
+        titleEn = old.titleEn;
+      }
+    }
+
+    String authorMr = enteredAuthor;
+    String authorEn = enteredAuthor;
+    if (_isEditing && widget.bookToEdit != null) {
+      final old = widget.bookToEdit!;
+      if (enteredAuthor == old.authorMr) {
+        authorMr = old.authorMr;
+        authorEn = old.authorEn.isNotEmpty ? old.authorEn : enteredAuthor;
+      } else if (enteredAuthor == old.authorEn) {
+        authorMr = old.authorMr.isNotEmpty ? old.authorMr : enteredAuthor;
+        authorEn = old.authorEn;
+      }
+    }
 
     final book = Book(
       id: widget.bookToEdit?.id ?? '',
       bookCode: _codeController.text.trim(),
-      titleMr: title,
-      titleEn: title,
-      authorMr: author,
-      authorEn: author,
-      category: _selectedCategory,
+      titleMr: titleMr,
+      titleEn: titleEn,
+      authorMr: authorMr,
+      authorEn: authorEn,
+      category: widget.bookToEdit?.category ?? 'General',
       isbn: _isbnController.text.trim(),
-      publisher: _publisherController.text.trim(),
-      publicationYear: publicationYear,
+      publisher: widget.bookToEdit?.publisher ?? '',
+      publicationYear: widget.bookToEdit?.publicationYear ?? 0,
       totalCopies: totalCopies,
       availableCopies: availableCopies.clamp(0, totalCopies),
     );
@@ -207,92 +200,38 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Title (Single field)
+              // Book Title Section
+              _buildSectionTitle(l10n.bookTitle),
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: '${l10n.sortByTitle} *',
-                  hintText: 'उदा. मृत्युंजय / Mrityunjay',
+                  labelText: l10n.bookTitle,
+                  hintText: l10n.bookTitleHint,
                   prefixIcon: const Icon(Icons.menu_book_rounded, color: AppColors.primary),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return l10n.nameRequired;
+                    return l10n.bookTitleRequired;
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
 
-              // Author (Single field)
+              // Author Section
+              _buildSectionTitle(l10n.author),
               TextFormField(
                 controller: _authorController,
                 decoration: InputDecoration(
-                  labelText: '${l10n.sortByAuthor} *',
-                  hintText: 'उदा. शिवाजी सावंत / Shivaji Sawant',
+                  labelText: l10n.author,
+                  hintText: l10n.authorHint,
                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                 ),
                 validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return l10n.authorRequired;
-                  }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
 
-              // Category dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: InputDecoration(
-                  labelText: l10n.category,
-                  prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
-                ),
-                items: AppConstants.bookCategories.map((cat) {
-                  return DropdownMenuItem<String>(
-                    value: cat,
-                    child: Text(cat, style: const TextStyle(fontSize: 14)),
-                  );
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedCategory = val;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Publisher & Publication Year
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextFormField(
-                      controller: _publisherController,
-                      decoration: InputDecoration(
-                        labelText: l10n.publisher,
-                        hintText: 'उदा. कॉन्टिनेन्टल',
-                        prefixIcon: const Icon(Icons.business_outlined, color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _yearController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: l10n.publicationYear,
-                        hintText: '1967',
-                        prefixIcon: const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 16),
 
               // ISBN Number
@@ -376,6 +315,20 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
               const SizedBox(height: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary,
         ),
       ),
     );
