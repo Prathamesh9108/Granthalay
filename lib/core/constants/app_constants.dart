@@ -10,9 +10,10 @@ class AppConstants {
   static const String keyIsLoggedIn = 'is_logged_in';
   static const String keyUsername = 'logged_in_username';
 
-  // Default API configuration for future Spring Boot backend
-  static const String defaultApiBaseUrl = 'http://10.0.2.2:8080/api'; // Android Emulator default
-  static const String defaultLocalhostUrl = 'http://localhost:8080/api';
+  // Default API configuration for Spring Boot backend
+  static const String defaultApiBaseUrl = 'http://192.168.1.46:8080/api'; // Real device - PC Wi-Fi IP
+  static const String defaultLocalhostUrl = 'http://localhost:8080/api'; // USB debugging (adb reverse)
+  static const String emulatorUrl = 'http://10.0.2.2:8080/api'; // Android Emulator only
 
   // Categories for Marathi & English
   static const List<String> bookCategories = [

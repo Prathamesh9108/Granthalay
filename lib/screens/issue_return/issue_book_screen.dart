@@ -41,6 +41,10 @@ class _IssueBookScreenState extends State<IssueBookScreen> {
     super.initState();
     _selectedMember = widget.preselectedMember;
     _selectedBook = widget.preselectedBook;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.memberRepository.getMembers();
+      widget.bookRepository.getBooks();
+    });
   }
 
   void _chooseMember() {
@@ -374,7 +378,9 @@ class _IssueBookScreenState extends State<IssueBookScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(
+              'Issue failed: ${e.toString().replaceAll("ApiException: ", "")}',
+            ),
             backgroundColor: AppColors.error,
           ),
         );

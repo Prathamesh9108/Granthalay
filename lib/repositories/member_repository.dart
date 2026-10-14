@@ -25,7 +25,29 @@ class MemberRepositoryImpl extends ChangeNotifier implements MemberRepository {
   String? get errorMessage => _errorMessage;
 
   MemberRepositoryImpl(this._apiService) {
-    _initDemoData();
+    if (_apiService.isDemoMode) {
+      _initDemoData();
+    } else {
+      _members = [];
+      getMembers();
+    }
+    _apiService.addListener(_onApiServiceChanged);
+  }
+
+  void _onApiServiceChanged() {
+    if (_apiService.isDemoMode) {
+      _initDemoData();
+      notifyListeners();
+    } else {
+      _members = [];
+      getMembers();
+    }
+  }
+
+  @override
+  void dispose() {
+    _apiService.removeListener(_onApiServiceChanged);
+    super.dispose();
   }
 
   void _initDemoData() {
@@ -43,10 +65,14 @@ class MemberRepositoryImpl extends ChangeNotifier implements MemberRepository {
 
     try {
       final response = await _apiService.get('/members');
+      List<dynamic> items = [];
       if (response is List) {
-        _members = response.map((item) => Member.fromJson(item as Map<String, dynamic>)).toList();
-        notifyListeners();
+        items = response;
+      } else if (response is Map && response['content'] is List) {
+        items = response['content'] as List<dynamic>;
       }
+      _members = items.map((item) => Member.fromJson(item as Map<String, dynamic>)).toList();
+      notifyListeners();
       return _members;
     } catch (e) {
       _errorMessage = e.toString();

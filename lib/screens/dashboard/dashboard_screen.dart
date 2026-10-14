@@ -253,6 +253,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.upload_file_rounded,
+                      label: locale.languageCode == 'mr' ? 'मोठ्या प्रमाणात आयात' : 'Bulk Import (CSV/Excel)',
+                      color: const Color(0xFF0284C7),
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.bulkImport),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.person_add_rounded,
+                      label: locale.languageCode == 'mr' ? 'नवीन सदस्य' : 'Add Member',
+                      color: const Color(0xFF8B5CF6),
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.addEditMember),
+                    ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 28),
 

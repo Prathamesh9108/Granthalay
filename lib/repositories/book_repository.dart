@@ -11,6 +11,7 @@ abstract class BookRepository {
   Future<Book> updateBook(Book book);
   Future<void> deleteBook(String id);
   Future<void> updateCopies(String bookId, int availableDelta);
+  Future<Map<String, dynamic>> bulkImportBooks(String filePath);
 }
 
 class BookRepositoryImpl extends ChangeNotifier implements BookRepository {
@@ -25,7 +26,29 @@ class BookRepositoryImpl extends ChangeNotifier implements BookRepository {
   String? get errorMessage => _errorMessage;
 
   BookRepositoryImpl(this._apiService) {
-    _initDemoData();
+    if (_apiService.isDemoMode) {
+      _initDemoData();
+    } else {
+      _books = [];
+      getBooks();
+    }
+    _apiService.addListener(_onApiServiceChanged);
+  }
+
+  void _onApiServiceChanged() {
+    if (_apiService.isDemoMode) {
+      _initDemoData();
+      notifyListeners();
+    } else {
+      _books = [];
+      getBooks();
+    }
+  }
+
+  @override
+  void dispose() {
+    _apiService.removeListener(_onApiServiceChanged);
+    super.dispose();
   }
 
   void _initDemoData() {
@@ -42,11 +65,21 @@ class BookRepositoryImpl extends ChangeNotifier implements BookRepository {
     _errorMessage = null;
 
     try {
-      final response = await _apiService.get('/books');
-      if (response is List) {
-        _books = response.map((item) => Book.fromJson(item as Map<String, dynamic>)).toList();
-        notifyListeners();
+      dynamic response;
+      try {
+        response = await _apiService.get('/books/all');
+      } catch (_) {
+        response = await _apiService.get('/books?size=5000');
       }
+
+      List<dynamic> items = [];
+      if (response is List) {
+        items = response;
+      } else if (response is Map && response['content'] is List) {
+        items = response['content'] as List<dynamic>;
+      }
+      _books = items.map((item) => Book.fromJson(item as Map<String, dynamic>)).toList();
+      notifyListeners();
       return _books;
     } catch (e) {
       _errorMessage = e.toString();
@@ -174,6 +207,24 @@ class BookRepositoryImpl extends ChangeNotifier implements BookRepository {
       final current = _books[index];
       final newAvail = (current.availableCopies + availableDelta).clamp(0, current.totalCopies);
       _books[index] = current.copyWith(availableCopies: newAvail);
+      notifyListeners();
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> bulkImportBooks(String filePath) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final response = await _apiService.postMultipart('/books/bulk-import', filePath);
+      await getBooks();
+      return (response is Map<String, dynamic>) ? response : {};
+    } catch (e) {
+      _errorMessage = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

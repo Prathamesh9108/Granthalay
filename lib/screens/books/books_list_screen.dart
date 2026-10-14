@@ -49,6 +49,13 @@ class _BooksListScreenState extends State<BooksListScreen> {
               )
             : null,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.upload_file_rounded),
+            tooltip: 'Bulk Import (CSV / Excel)',
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.bulkImport);
+            },
+          ),
           PopupMenuButton<BookSortOption>(
             icon: const Icon(Icons.sort_rounded),
             tooltip: l10n.sortBy,
@@ -209,34 +216,58 @@ class _BooksListScreenState extends State<BooksListScreen> {
                 ),
               ),
 
+              // Books Count Bar
+              if (allBooks.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        filteredBooks.length == allBooks.length
+                            ? '${allBooks.length} Books'
+                            : '${filteredBooks.length} of ${allBooks.length} Books',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Books List
               Expanded(
-                child: filteredBooks.isEmpty
-                    ? EmptyState(
-                        icon: Icons.menu_book_outlined,
-                        title: l10n.noRecentTransactions,
-                        subtitle: l10n.searchPersonNoResults,
-                        actionLabel: l10n.addBook,
-                        onAction: () => Navigator.pushNamed(context, AppRoutes.addEditBook),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filteredBooks.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final book = filteredBooks[index];
-                          return _BookCard(
-                            book: book,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.bookDetails,
-                                arguments: book,
-                              );
-                            },
-                          );
-                        },
-                      ),
+                child: RefreshIndicator(
+                  onRefresh: () => widget.bookRepository.getBooks(),
+                  child: filteredBooks.isEmpty
+                      ? EmptyState(
+                          icon: Icons.menu_book_outlined,
+                          title: l10n.noRecentTransactions,
+                          subtitle: l10n.searchPersonNoResults,
+                          actionLabel: l10n.addBook,
+                          onAction: () => Navigator.pushNamed(context, AppRoutes.addEditBook),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                          itemCount: filteredBooks.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final book = filteredBooks[index];
+                            return _BookCard(
+                              book: book,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.bookDetails,
+                                  arguments: book,
+                                );
+                              },
+                            );
+                          },
+                        ),
+                ),
               ),
             ],
           );
@@ -364,6 +395,24 @@ class _BookCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (book.isbn.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '#${book.isbn}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                     const Spacer(),
                     StatusBadge.availability(
                       isAvailable: book.isAvailable,
@@ -382,16 +431,18 @@ class _BookCard extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  book.displayAuthor(locale),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+                if (book.displayAuthor(locale).isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    book.displayAuthor(locale),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

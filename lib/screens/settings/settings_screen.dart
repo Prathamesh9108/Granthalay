@@ -9,13 +9,13 @@ import '../../widgets/custom_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   final LocaleProvider localeProvider;
-  final ApiService apiService;
+  final ApiService? apiService;
   final VoidCallback? onOpenDrawer;
 
   const SettingsScreen({
     super.key,
     required this.localeProvider,
-    required this.apiService,
+    this.apiService,
     this.onOpenDrawer,
   });
 
@@ -24,53 +24,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late final TextEditingController _apiUrlController;
-  bool _isTestingApi = false;
-  String? _apiTestResult;
-
-  @override
-  void initState() {
-    super.initState();
-    _apiUrlController = TextEditingController(text: widget.apiService.baseUrl);
-  }
-
-  @override
-  void dispose() {
-    _apiUrlController.dispose();
-    super.dispose();
-  }
-
-  void _saveApiUrl() async {
-    final l10n = AppLocalizations.of(context)!;
-    await widget.apiService.setBaseUrl(_apiUrlController.text);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.successSaved),
-          backgroundColor: AppColors.accentGreen,
-        ),
-      );
-    }
-  }
-
-  void _testConnection() async {
-    setState(() {
-      _isTestingApi = true;
-      _apiTestResult = null;
-    });
-
-    final success = await widget.apiService.testConnection();
-
-    if (mounted) {
-      setState(() {
-        _isTestingApi = false;
-        _apiTestResult = success
-            ? 'सर्व्हर जोडणी यशस्वी! (Connected)'
-            : 'सर्व्हरशी संपर्क होऊ शकला नाही. (Cannot reach backend - normal for demo mode)';
-      });
-    }
-  }
-
   void _confirmLogout() {
     final l10n = AppLocalizations.of(context)!;
 
@@ -182,88 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 16),
 
-            // 2. Spring Boot REST API Configuration Card
-            CustomCard(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.api_rounded, color: AppColors.primary, size: 22),
-                      const SizedBox(width: 10),
-                      Text(
-                        l10n.apiConfiguration,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-                  // Demo Mode Toggle Switch
-                  SwitchListTile(
-                    title: Text(
-                      l10n.apiStatusDemo,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    subtitle: const Text('स्थानिक मेमरी डेटा वापरा (बॅकएंड सर्व्हरशिवाय)'),
-                    value: widget.apiService.isDemoMode,
-                    activeThumbColor: AppColors.primary,
-                    activeTrackColor: AppColors.primaryContainer,
-                    contentPadding: EdgeInsets.zero,
-                    onChanged: (val) {
-                      widget.apiService.setDemoMode(val);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _apiUrlController,
-                    decoration: InputDecoration(
-                      labelText: l10n.apiBaseUrl,
-                      hintText: AppConstants.defaultApiBaseUrl,
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.save_outlined, color: AppColors.primary),
-                        onPressed: _saveApiUrl,
-                        tooltip: l10n.saveApiSettings,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: _isTestingApi ? null : _testConnection,
-                        icon: _isTestingApi
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.network_check_rounded, size: 16),
-                        label: const Text('Test API Connection'),
-                      ),
-                    ],
-                  ),
-                  if (_apiTestResult != null) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      _apiTestResult!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _apiTestResult!.contains('यशस्वी') ? AppColors.accentGreen : AppColors.error,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // 3. Library Information Card
+            // 2. Library Information Card
             CustomCard(
               padding: const EdgeInsets.all(18),
               child: Column(

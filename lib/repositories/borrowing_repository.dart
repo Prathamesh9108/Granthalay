@@ -36,7 +36,29 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
     this._bookRepository,
     this._memberRepository,
   ) {
-    _initDemoData();
+    if (_apiService.isDemoMode) {
+      _initDemoData();
+    } else {
+      _records = [];
+      getAllRecords();
+    }
+    _apiService.addListener(_onApiServiceChanged);
+  }
+
+  void _onApiServiceChanged() {
+    if (_apiService.isDemoMode) {
+      _initDemoData();
+      notifyListeners();
+    } else {
+      _records = [];
+      getAllRecords();
+    }
+  }
+
+  @override
+  void dispose() {
+    _apiService.removeListener(_onApiServiceChanged);
+    super.dispose();
   }
 
   void _initDemoData() {
@@ -54,10 +76,14 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
 
     try {
       final response = await _apiService.get('/borrow-records');
+      List<dynamic> items = [];
       if (response is List) {
-        _records = response.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
-        notifyListeners();
+        items = response;
+      } else if (response is Map && response['content'] is List) {
+        items = response['content'] as List<dynamic>;
       }
+      _records = items.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
+      notifyListeners();
       return _records;
     } catch (e) {
       _errorMessage = e.toString();
@@ -67,6 +93,14 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
     }
   }
 
+  List<dynamic> _extractList(dynamic response) {
+    if (response is List) return response;
+    if (response is Map && response['content'] is List) {
+      return response['content'] as List<dynamic>;
+    }
+    return [];
+  }
+
   @override
   Future<List<BorrowRecord>> getIssuedRecords() async {
     if (_apiService.isDemoMode) {
@@ -74,8 +108,9 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
     } else {
       try {
         final response = await _apiService.get('/borrow-records/issued');
-        if (response is List) {
-          return response.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
+        final items = _extractList(response);
+        if (items.isNotEmpty) {
+          return items.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
         }
       } catch (_) {}
       return _records.where((r) => !r.isReturned).toList();
@@ -89,8 +124,9 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
     } else {
       try {
         final response = await _apiService.get('/borrow-records/overdue');
-        if (response is List) {
-          return response.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
+        final items = _extractList(response);
+        if (items.isNotEmpty) {
+          return items.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
         }
       } catch (_) {}
       return _records.where((r) => r.isCurrentlyOverdue).toList();
@@ -104,8 +140,9 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
     } else {
       try {
         final response = await _apiService.get('/members/$memberId/borrow-history');
-        if (response is List) {
-          return response.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
+        final items = _extractList(response);
+        if (items.isNotEmpty) {
+          return items.map((item) => BorrowRecord.fromJson(item as Map<String, dynamic>)).toList();
         }
       } catch (_) {}
       return _records.where((r) => r.memberId == memberId).toList();
@@ -133,7 +170,13 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
         return createdRecord;
       } else {
         // Post to Spring Boot /api/borrow-records/issue
-        final response = await _apiService.post('/borrow-records/issue', record.toJson());
+        final payload = {
+          'bookId': int.tryParse(record.bookId) ?? 0,
+          'memberId': int.tryParse(record.memberId) ?? 0,
+          'issueDate': record.issueDate.toIso8601String().split('T')[0],
+          'dueDate': record.dueDate.toIso8601String().split('T')[0],
+        };
+        final response = await _apiService.post('/borrow-records/issue', payload);
         final createdRecord = BorrowRecord.fromJson(response as Map<String, dynamic>);
         _records.insert(0, createdRecord);
         await _bookRepository.updateCopies(record.bookId, -1);
@@ -184,6 +227,9 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
         final index = _records.indexWhere((r) => r.id == recordId);
         if (index != -1) {
           _records[index] = updated;
+          await _bookRepository.updateCopies(updated.bookId, 1);
+        } else {
+          _records.insert(0, updated);
           await _bookRepository.updateCopies(updated.bookId, 1);
         }
         _isLoading = false;
@@ -245,7 +291,14 @@ class BorrowingRepositoryImpl extends ChangeNotifier implements BorrowingReposit
         if (response != null) {
           return DashboardStats.fromJson(response as Map<String, dynamic>);
         }
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final response = await _apiService.get('/borrowings/stats');
+          if (response != null) {
+            return DashboardStats.fromJson(response as Map<String, dynamic>);
+          }
+        } catch (_) {}
+      }
       return DashboardStats.empty();
     }
   }

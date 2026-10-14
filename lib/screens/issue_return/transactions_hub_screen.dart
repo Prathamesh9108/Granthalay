@@ -24,17 +24,33 @@ class TransactionsHubScreen extends StatefulWidget {
 
 class _TransactionsHubScreenState extends State<TransactionsHubScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchRecords();
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchRecords() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    try {
+      await widget.borrowingRepository.getAllRecords();
+    } catch (_) {} finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
   }
 
   void _confirmReturn(BorrowRecord record) {
@@ -51,11 +67,26 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await widget.borrowingRepository.returnBook(record.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.returnSuccess), backgroundColor: AppColors.accentGreen),
-                );
+              try {
+                await widget.borrowingRepository.returnBook(record.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.returnSuccess), backgroundColor: AppColors.accentGreen),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Return failed: ${e.toString().replaceAll("ApiException: ", "")}',
+                      ),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              } finally {
+                _fetchRecords();
               }
             },
             child: Text(l10n.confirm),
@@ -84,12 +115,33 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
           IconButton(
             tooltip: l10n.quickIssueBook,
             icon: const Icon(Icons.outbox_rounded, color: AppColors.primary),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.issueBook),
+            onPressed: () async {
+              final res = await Navigator.pushNamed(context, AppRoutes.issueBook);
+              if (res == true) {
+                _fetchRecords();
+              }
+            },
           ),
           IconButton(
             tooltip: l10n.quickReturnBook,
             icon: const Icon(Icons.move_to_inbox_rounded, color: AppColors.accentGreen),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.returnBook),
+            onPressed: () async {
+              final res = await Navigator.pushNamed(context, AppRoutes.returnBook);
+              if (res == true) {
+                _fetchRecords();
+              }
+            },
+          ),
+          IconButton(
+            tooltip: 'Refresh',
+            icon: _isRefreshing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh_rounded),
+            onPressed: _isRefreshing ? null : _fetchRecords,
           ),
         ],
         bottom: TabBar(
@@ -156,19 +208,31 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
     required AppLocalizations l10n,
     required bool showReturnBtn,
   }) {
-    if (records.isEmpty) {
-      return EmptyState(
-        icon: Icons.assignment_outlined,
-        title: emptyTitle,
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: records.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, i) {
-        final rec = records[i];
+    return RefreshIndicator(
+      onRefresh: _fetchRecords,
+      child: records.isEmpty
+          ? LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: EmptyState(
+                      icon: Icons.assignment_outlined,
+                      title: emptyTitle,
+                      subtitle: 'पुस्तके देण्यासाठी किंवा जमा करण्यासाठी वरील बटणे वापरा',
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: records.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                final rec = records[i];
         return CustomCard(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -279,6 +343,7 @@ class _TransactionsHubScreenState extends State<TransactionsHubScreen> with Sing
           ),
         );
       },
-    );
-  }
+    ),
+  );
+}
 }

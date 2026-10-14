@@ -22,12 +22,10 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _codeController;
-  late final TextEditingController _nameMrController;
-  late final TextEditingController _nameEnController;
+  late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _addressController;
-  late final TextEditingController _deptController;
 
   bool _isLoading = false;
   bool get _isEditing => widget.memberToEdit != null;
@@ -36,24 +34,26 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
   void initState() {
     super.initState();
     final m = widget.memberToEdit;
-    _codeController = TextEditingController(text: m?.memberCode ?? 'M00${widget.memberRepository.members.length + 1}');
-    _nameMrController = TextEditingController(text: m?.nameMr ?? '');
-    _nameEnController = TextEditingController(text: m?.nameEn ?? '');
+    _codeController = TextEditingController(
+      text: m?.memberCode ?? 'M00${widget.memberRepository.members.length + 1}',
+    );
+
+    // Initializing single name field with fallback
+    final initialName = m?.nameMr.isNotEmpty == true ? m!.nameMr : (m?.nameEn ?? '');
+    _nameController = TextEditingController(text: initialName);
+
     _phoneController = TextEditingController(text: m?.phone ?? '');
     _emailController = TextEditingController(text: m?.email ?? '');
     _addressController = TextEditingController(text: m?.address ?? '');
-    _deptController = TextEditingController(text: m?.departmentClass ?? '');
   }
 
   @override
   void dispose() {
     _codeController.dispose();
-    _nameMrController.dispose();
-    _nameEnController.dispose();
+    _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
-    _deptController.dispose();
     super.dispose();
   }
 
@@ -62,12 +62,22 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    // Require at least one name
-    final hasName = _nameMrController.text.trim().isNotEmpty || _nameEnController.text.trim().isNotEmpty;
-    if (!hasName) {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.nameRequired),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.phoneNumber),
           backgroundColor: AppColors.error,
         ),
       );
@@ -81,12 +91,12 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
     final member = Member(
       id: widget.memberToEdit?.id ?? '',
       memberCode: _codeController.text.trim(),
-      nameMr: _nameMrController.text.trim(),
-      nameEn: _nameEnController.text.trim(),
-      phone: _phoneController.text.trim(),
+      nameMr: name,
+      nameEn: name,
+      phone: phone,
       email: _emailController.text.trim(),
       address: _addressController.text.trim(),
-      departmentClass: _deptController.text.trim(),
+      departmentClass: widget.memberToEdit?.departmentClass ?? '',
       registeredDate: widget.memberToEdit?.registeredDate ?? DateTime.now(),
     );
 
@@ -110,7 +120,7 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Error: ${e.toString().replaceAll("ApiException: ", "")}'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -141,13 +151,24 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Member Code
-              _buildSectionTitle(l10n.memberCode),
               TextFormField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: l10n.memberCode,
+                  labelText: '${l10n.memberCode} *',
                   hintText: 'उदा. M001',
                   prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary),
+                  suffixIcon: !_isEditing
+                      ? IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 20),
+                          tooltip: 'Generate new code',
+                          onPressed: () {
+                            setState(() {
+                              _codeController.text =
+                                  'M00${(DateTime.now().millisecondsSinceEpoch % 900) + 100}';
+                            });
+                          },
+                        )
+                      : null,
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -156,38 +177,31 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
-
-              // Full Name (Marathi & English)
-              _buildSectionTitle(l10n.memberNameMarathi),
+              // Full Name (Single field)
               TextFormField(
-                controller: _nameMrController,
+                controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: l10n.memberNameMarathi,
-                  hintText: 'उदा. राहुल पाटील',
+                  labelText: '${l10n.membersTitle.contains("सभासद") ? "पूर्ण नाव" : "Full Name"} *',
+                  hintText: 'उदा. राहुल पाटील / Rahul Patil',
                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                 ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return l10n.nameRequired;
+                  }
+                  return null;
+                },
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _nameEnController,
-                decoration: InputDecoration(
-                  labelText: l10n.memberNameEnglish,
-                  hintText: 'e.g. Rahul Patil',
-                  prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
-                ),
-              ),
+              const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
-
-              // Contact Information
-              _buildSectionTitle(l10n.phoneNumber),
+              // Phone Number
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: l10n.phoneNumber,
+                  labelText: '${l10n.phoneNumber} *',
                   hintText: '९८२२०१२३४५',
                   prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.primary),
                 ),
@@ -198,40 +212,30 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // Email Address
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: l10n.emailAddress,
-                  hintText: 'example@email.com',
+                  hintText: 'example@email.com (ऐच्छिक)',
                   prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
                 ),
               ),
+              const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
-
-              // Department & Address
-              _buildSectionTitle(l10n.departmentClass),
-              TextFormField(
-                controller: _deptController,
-                decoration: InputDecoration(
-                  labelText: l10n.departmentClass,
-                  hintText: 'उदा. कला शाखा / B.A. Marathi',
-                  prefixIcon: const Icon(Icons.school_outlined, color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(height: 12),
+              // Address
               TextFormField(
                 controller: _addressController,
                 maxLines: 2,
                 decoration: InputDecoration(
                   labelText: l10n.address,
-                  hintText: 'उदा. शिवाजी नगर, पुणे',
+                  hintText: 'उदा. शिवाजी नगर, पुणे (ऐच्छिक)',
                   prefixIcon: const Icon(Icons.home_outlined, color: AppColors.primary),
                 ),
               ),
-
               const SizedBox(height: 32),
 
               // Save & Cancel Actions
@@ -261,20 +265,6 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
               const SizedBox(height: 20),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary,
         ),
       ),
     );

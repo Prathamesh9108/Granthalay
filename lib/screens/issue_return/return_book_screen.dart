@@ -23,6 +23,14 @@ class ReturnBookScreen extends StatefulWidget {
 class _ReturnBookScreenState extends State<ReturnBookScreen> {
   String _searchQuery = '';
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.borrowingRepository.getAllRecords();
+    });
+  }
+
   void _confirmReturn(BorrowRecord record) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
@@ -77,12 +85,15 @@ class _ReturnBookScreenState extends State<ReturnBookScreen> {
                       backgroundColor: AppColors.accentGreen,
                     ),
                   );
+                  Navigator.pop(context, true);
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error: $e'),
+                      content: Text(
+                        'Return failed: ${e.toString().replaceAll("ApiException: ", "")}',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );

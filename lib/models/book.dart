@@ -34,10 +34,14 @@ class Book {
   int get issuedCopies => (totalCopies - availableCopies).clamp(0, totalCopies);
 
   String displayTitle(Locale locale) {
+    final isEnDigits = RegExp(r'^\d+$').hasMatch(titleEn.trim());
     if (locale.languageCode == 'mr') {
-      return titleMr.isNotEmpty ? titleMr : titleEn;
+      return titleMr.isNotEmpty ? titleMr : (isEnDigits ? '' : titleEn);
     } else {
-      return titleEn.isNotEmpty ? titleEn : titleMr;
+      if (titleEn.isNotEmpty && !isEnDigits) {
+        return titleEn;
+      }
+      return titleMr.isNotEmpty ? titleMr : titleEn;
     }
   }
 
@@ -80,13 +84,30 @@ class Book {
   }
 
   factory Book.fromJson(Map<String, dynamic> json) {
+    final tMr = (json['titleMr'] as String? ?? '').trim();
+    final tEn = (json['titleEn'] as String? ?? '').trim();
+    final singleTitle = (json['title'] as String? ?? '').trim();
+    final isEnDigits = RegExp(r'^\d+$').hasMatch(tEn);
+
+    // If tEn is purely digits and tMr is present, use tMr as the primary title
+    final effectiveTitle = (tMr.isNotEmpty && !RegExp(r'^\d+$').hasMatch(tMr))
+        ? tMr
+        : (tEn.isNotEmpty && !isEnDigits
+            ? tEn
+            : (singleTitle.isNotEmpty ? singleTitle : (tMr.isNotEmpty ? tMr : tEn)));
+
+    final aMr = (json['authorMr'] as String? ?? '').trim();
+    final aEn = (json['authorEn'] as String? ?? '').trim();
+    final singleAuthor = (json['author'] as String? ?? '').trim();
+    final effectiveAuthor = aMr.isNotEmpty ? aMr : (aEn.isNotEmpty ? aEn : singleAuthor);
+
     return Book(
       id: json['id']?.toString() ?? '',
       bookCode: json['bookCode'] as String? ?? json['code'] as String? ?? '',
-      titleMr: json['titleMr'] as String? ?? '',
-      titleEn: json['titleEn'] as String? ?? '',
-      authorMr: json['authorMr'] as String? ?? '',
-      authorEn: json['authorEn'] as String? ?? '',
+      titleMr: tMr.isNotEmpty ? tMr : effectiveTitle,
+      titleEn: (tEn.isNotEmpty && !isEnDigits) ? tEn : effectiveTitle,
+      authorMr: aMr.isNotEmpty ? aMr : effectiveAuthor,
+      authorEn: aEn.isNotEmpty ? aEn : effectiveAuthor,
       category: json['category'] as String? ?? 'General',
       isbn: json['isbn'] as String? ?? '',
       publisher: json['publisher'] as String? ?? '',
@@ -97,13 +118,17 @@ class Book {
   }
 
   Map<String, dynamic> toJson() {
+    final effectiveTitle = titleMr.isNotEmpty ? titleMr : titleEn;
+    final effectiveAuthor = authorMr.isNotEmpty ? authorMr : authorEn;
     return {
       'id': id,
       'bookCode': bookCode,
-      'titleMr': titleMr,
-      'titleEn': titleEn,
-      'authorMr': authorMr,
-      'authorEn': authorEn,
+      'title': effectiveTitle,
+      'titleMr': titleMr.isNotEmpty ? titleMr : effectiveTitle,
+      'titleEn': titleEn.isNotEmpty ? titleEn : effectiveTitle,
+      'author': effectiveAuthor,
+      'authorMr': authorMr.isNotEmpty ? authorMr : effectiveAuthor,
+      'authorEn': authorEn.isNotEmpty ? authorEn : effectiveAuthor,
       'category': category,
       'isbn': isbn,
       'publisher': publisher,

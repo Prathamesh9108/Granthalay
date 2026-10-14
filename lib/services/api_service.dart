@@ -32,7 +32,13 @@ class ApiService extends ChangeNotifier {
       final savedUrl = prefs.getString(AppConstants.keyApiBaseUrl);
       final savedDemoMode = prefs.getBool(AppConstants.keyIsDemoMode);
       if (savedUrl != null && savedUrl.isNotEmpty) {
-        _baseUrl = savedUrl;
+        // Auto-migrate stale IP or emulator URL to the current default
+        if (savedUrl.contains('192.168.1.16') || savedUrl.contains('10.0.2.2')) {
+          _baseUrl = AppConstants.defaultApiBaseUrl;
+          await prefs.setString(AppConstants.keyApiBaseUrl, _baseUrl);
+        } else {
+          _baseUrl = savedUrl;
+        }
       }
       if (savedDemoMode != null) {
         _isDemoMode = savedDemoMode;
@@ -126,6 +132,26 @@ class ApiService extends ChangeNotifier {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException('Network error: $e');
+    }
+  }
+
+  Future<dynamic> postMultipart(
+    String path,
+    String filePath, {
+    String fieldName = 'file',
+  }) async {
+    try {
+      final uri = _buildUri(path);
+      final request = http.MultipartRequest('POST', uri);
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+      final streamedResponse = await request.send().timeout(const Duration(minutes: 3));
+      final response = await http.Response.fromStream(streamedResponse);
+      return _processResponse(response);
+    } on SocketException {
+      throw ApiException('Cannot reach Spring Boot server at $_baseUrl.');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('Upload error: $e');
     }
   }
 
