@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../models/book.dart';
 import '../../repositories/book_repository.dart';
@@ -26,12 +25,9 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _authorController;
   late final TextEditingController _isbnController;
-  late final TextEditingController _publisherController;
-  late final TextEditingController _yearController;
   late final TextEditingController _totalCopiesController;
   late final TextEditingController _availableCopiesController;
 
-  late String _selectedCategory;
   bool _isLoading = false;
 
   bool get _isEditing => widget.bookToEdit != null;
@@ -40,17 +36,22 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
   void initState() {
     super.initState();
     final b = widget.bookToEdit;
-    _codeController = TextEditingController(text: b?.bookCode ?? 'BK-${DateTime.now().millisecondsSinceEpoch % 1000}');
+    _codeController = TextEditingController(
+      text: b?.bookCode ?? 'BK-${(DateTime.now().millisecondsSinceEpoch % 900) + 100}',
+    );
+
+    // Initializing single title and author with fallback
     final initialTitle = b != null ? (b.titleMr.isNotEmpty ? b.titleMr : b.titleEn) : '';
     final initialAuthor = b != null ? (b.authorMr.isNotEmpty ? b.authorMr : b.authorEn) : '';
     _titleController = TextEditingController(text: initialTitle);
     _authorController = TextEditingController(text: initialAuthor);
     _isbnController = TextEditingController(text: b?.isbn ?? '');
-    _publisherController = TextEditingController(text: b?.publisher ?? '');
-    _yearController = TextEditingController(text: b != null && b.publicationYear > 0 ? b.publicationYear.toString() : '');
-    _totalCopiesController = TextEditingController(text: b?.totalCopies.toString() ?? '5');
-    _availableCopiesController = TextEditingController(text: b?.availableCopies.toString() ?? '5');
-    _selectedCategory = b?.category ?? AppConstants.bookCategories.first;
+    _totalCopiesController = TextEditingController(
+      text: b?.totalCopies.toString() ?? '5',
+    );
+    _availableCopiesController = TextEditingController(
+      text: b?.availableCopies.toString() ?? '5',
+    );
   }
 
   @override
@@ -59,8 +60,6 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
     _titleController.dispose();
     _authorController.dispose();
     _isbnController.dispose();
-    _publisherController.dispose();
-    _yearController.dispose();
     _totalCopiesController.dispose();
     _availableCopiesController.dispose();
     super.dispose();
@@ -77,7 +76,6 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
 
     final totalCopies = int.tryParse(_totalCopiesController.text.trim()) ?? 1;
     final availableCopies = int.tryParse(_availableCopiesController.text.trim()) ?? totalCopies;
-    final publicationYear = int.tryParse(_yearController.text.trim()) ?? 0;
 
     final enteredTitle = _titleController.text.trim();
     final enteredAuthor = _authorController.text.trim();
@@ -115,10 +113,10 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
       titleEn: titleEn,
       authorMr: authorMr,
       authorEn: authorEn,
-      category: _selectedCategory,
+      category: widget.bookToEdit?.category ?? 'General',
       isbn: _isbnController.text.trim(),
-      publisher: _publisherController.text.trim(),
-      publicationYear: publicationYear,
+      publisher: widget.bookToEdit?.publisher ?? '',
+      publicationYear: widget.bookToEdit?.publicationYear ?? 0,
       totalCopies: totalCopies,
       availableCopies: availableCopies.clamp(0, totalCopies),
     );
@@ -143,7 +141,7 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Error: ${e.toString().replaceAll("ApiException: ", "")}'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -173,14 +171,25 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Identification section
-              _buildSectionTitle(l10n.bookCode),
+              // Book Code
               TextFormField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: l10n.bookCode,
+                  labelText: '${l10n.bookCode} *',
                   hintText: 'उदा. BK-101',
                   prefixIcon: const Icon(Icons.qr_code_rounded, color: AppColors.primary),
+                  suffixIcon: !_isEditing
+                      ? IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 20),
+                          tooltip: 'Generate new code',
+                          onPressed: () {
+                            setState(() {
+                              _codeController.text =
+                                  'BK-${(DateTime.now().millisecondsSinceEpoch % 900) + 100}';
+                            });
+                          },
+                        )
+                      : null,
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -189,8 +198,7 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                   return null;
                 },
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Book Title Section
               _buildSectionTitle(l10n.bookTitle),
@@ -199,7 +207,7 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.bookTitle,
                   hintText: l10n.bookTitleHint,
-                  prefixIcon: const Icon(Icons.title_rounded, color: AppColors.primary),
+                  prefixIcon: const Icon(Icons.menu_book_rounded, color: AppColors.primary),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -208,8 +216,7 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                   return null;
                 },
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Author Section
               _buildSectionTitle(l10n.author),
@@ -221,82 +228,24 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                 ),
                 validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return l10n.bookAuthorRequired;
-                  }
                   return null;
                 },
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              // Category dropdown
-              _buildSectionTitle(l10n.category),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
-                decoration: InputDecoration(
-                  labelText: l10n.category,
-                  prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
-                ),
-                items: AppConstants.bookCategories.map((cat) {
-                  return DropdownMenuItem<String>(
-                    value: cat,
-                    child: Text(cat, style: const TextStyle(fontSize: 14)),
-                  );
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedCategory = val;
-                    });
-                  }
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              // Publication Details
-              _buildSectionTitle(l10n.publisher),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _publisherController,
-                      decoration: InputDecoration(
-                        labelText: l10n.publisher,
-                        hintText: 'उदा. कॉन्टिनेन्टल',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 1,
-                    child: TextFormField(
-                      controller: _yearController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: l10n.publicationYear,
-                        hintText: '1967',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+              // ISBN Number
               TextFormField(
                 controller: _isbnController,
                 decoration: InputDecoration(
                   labelText: l10n.isbn,
-                  hintText: '978-81-7766-321-1',
+                  hintText: '978-81-7766-321-1 (ऐच्छिक)',
                   prefixIcon: const Icon(Icons.numbers_rounded, color: AppColors.primary),
                 ),
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Copies
-              _buildSectionTitle(l10n.totalCopiesLabel),
               Row(
                 children: [
                   Expanded(
@@ -304,7 +253,7 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                       controller: _totalCopiesController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: l10n.totalCopiesLabel,
+                        labelText: '${l10n.totalCopiesLabel} *',
                         prefixIcon: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
                       ),
                       validator: (val) {
@@ -325,7 +274,7 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                       controller: _availableCopiesController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: l10n.availableCopiesLabel,
+                        labelText: '${l10n.availableCopiesLabel} *',
                         prefixIcon: const Icon(Icons.check_circle_outline, color: AppColors.accentGreen),
                       ),
                       validator: (val) {
@@ -337,7 +286,6 @@ class _AddEditBookScreenState extends State<AddEditBookScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 32),
 
               // Action buttons (Save and Cancel)

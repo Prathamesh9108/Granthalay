@@ -3,14 +3,17 @@ import '../core/constants/app_colors.dart';
 import '../core/localization/locale_provider.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../core/routing/app_routes.dart';
+import '../services/api_service.dart';
 
 class AppDrawer extends StatelessWidget {
   final LocaleProvider localeProvider;
+  final ApiService? apiService;
   final VoidCallback? onLogout;
 
   const AppDrawer({
     super.key,
     required this.localeProvider,
+    this.apiService,
     this.onLogout,
   });
 
@@ -76,18 +79,35 @@ class AppDrawer extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: AppColors.secondary.withOpacity(0.9),
+                            color: (apiService?.isDemoMode ?? false)
+                                ? AppColors.secondary.withOpacity(0.9)
+                                : const Color(0xFF2E7D32),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text(
-                            l10n.demoModeNotice,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                (apiService?.isDemoMode ?? false)
+                                    ? Icons.info_outline_rounded
+                                    : Icons.cloud_done_rounded,
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                (apiService?.isDemoMode ?? false)
+                                    ? l10n.demoModeNotice
+                                    : (localeProvider.isMarathi ? 'डेटाबेस जोडलेला (Live)' : 'Live Database Connected'),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -102,31 +122,6 @@ class AppDrawer extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  _DrawerItem(
-                    icon: Icons.dashboard_outlined,
-                    title: l10n.navHome,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, AppRoutes.dashboard);
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.auto_stories_outlined,
-                    title: l10n.navBooks,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, AppRoutes.booksList);
-                    },
-                  ),
-                  _DrawerItem(
-                    icon: Icons.people_outline,
-                    title: l10n.navMembers,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, AppRoutes.membersList);
-                    },
-                  ),
-                  const Divider(height: 16),
                   _DrawerItem(
                     icon: Icons.person_search_outlined,
                     title: l10n.quickSearchPerson,

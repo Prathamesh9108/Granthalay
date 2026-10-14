@@ -33,6 +33,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadStats();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadStats();
+      if (widget.bookRepository.books.isEmpty) {
+        widget.bookRepository.getBooks();
+      }
+      if (widget.borrowingRepository.records.isEmpty) {
+        widget.borrowingRepository.getAllRecords();
+      }
+    });
     // Listen to changes in borrowing and books repositories
     (widget.borrowingRepository as Listenable).addListener(_loadStats);
     (widget.bookRepository as Listenable).addListener(_loadStats);
@@ -91,7 +100,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadStats,
+        onRefresh: () async {
+          await widget.bookRepository.getBooks();
+          await _loadStats();
+        },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -280,6 +292,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.upload_file_rounded,
+                      label: locale.languageCode == 'mr' ? 'मोठ्या प्रमाणात आयात' : 'Bulk Import (CSV/Excel)',
+                      color: const Color(0xFF0284C7),
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.bulkImport),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.person_add_rounded,
+                      label: locale.languageCode == 'mr' ? 'नवीन सदस्य' : 'Add Member',
+                      color: const Color(0xFF8B5CF6),
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.addEditMember),
+                    ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 28),
 
@@ -428,7 +462,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-class _QuickActionButton extends StatelessWidget {
+class _QuickActionButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -442,50 +476,70 @@ class _QuickActionButton extends StatelessWidget {
   });
 
   @override
+  State<_QuickActionButton> createState() => _QuickActionButtonState();
+}
+
+class _QuickActionButtonState extends State<_QuickActionButton> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border, width: 1.2),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x06000000),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeInOut,
+        transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0.0, 0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _isHovered ? widget.color.withOpacity(0.35) : AppColors.border,
+            width: 1.2,
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 20, color: color),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+          boxShadow: [
+            BoxShadow(
+              color: _isHovered ? Colors.black.withOpacity(0.06) : const Color(0x06000000),
+              blurRadius: _isHovered ? 10 : 6,
+              offset: Offset(0, _isHovered ? 3 : 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: widget.color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(widget.icon, size: 20, color: widget.color),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

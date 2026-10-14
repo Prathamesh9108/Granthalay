@@ -71,6 +71,7 @@ class _MainLayoutState extends State<MainLayout> {
       key: _scaffoldKey,
       drawer: AppDrawer(
         localeProvider: widget.localeProvider,
+        apiService: widget.apiService,
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -82,6 +83,11 @@ class _MainLayoutState extends State<MainLayout> {
           setState(() {
             _currentIndex = index;
           });
+          if (index == 0) {
+            widget.borrowingRepository.getDashboardStats();
+            widget.bookRepository.getBooks();
+            widget.borrowingRepository.getAllRecords();
+          }
         },
       ),
     );

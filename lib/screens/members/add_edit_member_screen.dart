@@ -34,7 +34,11 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
   void initState() {
     super.initState();
     final m = widget.memberToEdit;
-    _codeController = TextEditingController(text: m?.memberCode ?? 'M00${widget.memberRepository.members.length + 1}');
+    _codeController = TextEditingController(
+      text: m?.memberCode ?? 'M00${widget.memberRepository.members.length + 1}',
+    );
+
+    // Initializing single name field with fallback
     final initialName = m != null ? (m.nameMr.isNotEmpty ? m.nameMr : m.nameEn) : '';
     _nameController = TextEditingController(text: initialName);
     _phoneController = TextEditingController(text: m?.phone ?? '');
@@ -107,7 +111,7 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Error: ${e.toString().replaceAll("ApiException: ", "")}'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -138,13 +142,24 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Member Code
-              _buildSectionTitle(l10n.memberCode),
               TextFormField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: l10n.memberCode,
+                  labelText: '${l10n.memberCode} *',
                   hintText: 'उदा. M001',
                   prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primary),
+                  suffixIcon: !_isEditing
+                      ? IconButton(
+                          icon: const Icon(Icons.refresh_rounded, size: 20),
+                          tooltip: 'Generate new code',
+                          onPressed: () {
+                            setState(() {
+                              _codeController.text =
+                                  'M00${(DateTime.now().millisecondsSinceEpoch % 900) + 100}';
+                            });
+                          },
+                        )
+                      : null,
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -153,8 +168,7 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
                   return null;
                 },
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Full Name
               _buildSectionTitle(l10n.fullName),
@@ -172,16 +186,14 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
-
-              // Contact Information
-              _buildSectionTitle(l10n.phoneNumber),
+              // Phone Number
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: l10n.phoneNumber,
+                  labelText: '${l10n.phoneNumber} *',
                   hintText: '९८२२०१२३४५',
                   prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.primary),
                 ),
@@ -192,31 +204,30 @@ class _AddEditMemberScreenState extends State<AddEditMemberScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // Email Address
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: l10n.emailAddress,
-                  hintText: 'example@email.com',
+                  hintText: 'example@email.com (ऐच्छिक)',
                   prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
                 ),
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Address
-              _buildSectionTitle(l10n.address),
               TextFormField(
                 controller: _addressController,
                 maxLines: 2,
                 decoration: InputDecoration(
                   labelText: l10n.address,
-                  hintText: 'उदा. शिवाजी नगर, पुणे',
+                  hintText: 'उदा. शिवाजी नगर, पुणे (ऐच्छिक)',
                   prefixIcon: const Icon(Icons.home_outlined, color: AppColors.primary),
                 ),
               ),
-
               const SizedBox(height: 32),
 
               // Save & Cancel Actions

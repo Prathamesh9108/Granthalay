@@ -93,8 +93,6 @@ class _MembersListScreenState extends State<MembersListScreen> {
                               icon: Icons.people_outline_rounded,
                               title: l10n.membersTitle,
                               subtitle: l10n.searchPersonNoResults,
-                              actionLabel: l10n.addMember,
-                              onAction: () => Navigator.pushNamed(context, AppRoutes.addEditMember),
                             ),
                           ],
                         )

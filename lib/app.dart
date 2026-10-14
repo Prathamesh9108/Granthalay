@@ -28,6 +28,7 @@ import 'screens/search/search_person_screen.dart';
 import 'screens/history/borrowing_history_screen.dart';
 import 'screens/reports/reports_screen.dart';
 import 'screens/settings/settings_screen.dart';
+import 'screens/books/bulk_import_screen.dart';
 
 class GranthalayApp extends StatelessWidget {
   final LocaleProvider localeProvider;
@@ -196,6 +197,11 @@ class GranthalayApp extends StatelessWidget {
                     localeProvider: localeProvider,
                     apiService: apiService,
                   ),
+                );
+
+              case AppRoutes.bulkImport:
+                return MaterialPageRoute(
+                  builder: (_) => BulkImportScreen(bookRepository: bookRepository),
                 );
 
               default:

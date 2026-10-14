@@ -56,11 +56,16 @@ class Member {
   }
 
   factory Member.fromJson(Map<String, dynamic> json) {
+    final nMr = json['nameMr'] as String? ?? '';
+    final nEn = json['nameEn'] as String? ?? '';
+    final singleName = json['name'] as String? ?? '';
+    final effectiveName = nMr.isNotEmpty ? nMr : (nEn.isNotEmpty ? nEn : singleName);
+
     return Member(
       id: json['id']?.toString() ?? '',
       memberCode: json['memberCode'] as String? ?? json['code'] as String? ?? '',
-      nameMr: json['nameMr'] as String? ?? '',
-      nameEn: json['nameEn'] as String? ?? '',
+      nameMr: nMr.isNotEmpty ? nMr : effectiveName,
+      nameEn: nEn.isNotEmpty ? nEn : effectiveName,
       phone: json['phone'] as String? ?? '',
       email: json['email'] as String? ?? '',
       address: json['address'] as String? ?? '',
@@ -72,11 +77,13 @@ class Member {
   }
 
   Map<String, dynamic> toJson() {
+    final effectiveName = nameMr.isNotEmpty ? nameMr : nameEn;
     return {
       'id': id,
       'memberCode': memberCode,
-      'nameMr': nameMr,
-      'nameEn': nameEn,
+      'name': effectiveName,
+      'nameMr': nameMr.isNotEmpty ? nameMr : effectiveName,
+      'nameEn': nameEn.isNotEmpty ? nameEn : effectiveName,
       'phone': phone,
       'email': email,
       'address': address,

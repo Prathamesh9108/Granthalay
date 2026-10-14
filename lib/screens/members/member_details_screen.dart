@@ -69,15 +69,27 @@ class _MemberDetailsScreenState extends State<MemberDetailsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
               Navigator.pop(ctx);
-              await widget.memberRepository.deleteMember(_member.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.successDeleted),
-                    backgroundColor: AppColors.accentGreen,
-                  ),
-                );
-                Navigator.pop(context);
+              try {
+                await widget.memberRepository.deleteMember(_member.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.successDeleted),
+                      backgroundColor: AppColors.accentGreen,
+                    ),
+                  );
+                  Navigator.pop(context, true);
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Delete failed: ${e.toString().replaceAll("ApiException: ", "").replaceAll("Exception: ", "")}'),
+                      backgroundColor: AppColors.error,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
               }
             },
             child: Text(l10n.deleteMember),

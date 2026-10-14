@@ -33,11 +33,15 @@ class DashboardStats {
   }
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
+    final avail = (json['availableCopies'] as num?)?.toInt() ?? 0;
+    final issued = (json['issuedBooks'] as num?)?.toInt() ?? 0;
+    final totalC = (json['totalCopies'] as num?)?.toInt();
+
     return DashboardStats(
       totalBooks: (json['totalBooks'] as num?)?.toInt() ?? 0,
-      totalCopies: (json['totalCopies'] as num?)?.toInt() ?? 0,
-      availableCopies: (json['availableCopies'] as num?)?.toInt() ?? 0,
-      issuedBooks: (json['issuedBooks'] as num?)?.toInt() ?? 0,
+      totalCopies: (totalC != null && totalC > 0) ? totalC : (avail + issued),
+      availableCopies: avail,
+      issuedBooks: issued,
       totalMembers: (json['totalMembers'] as num?)?.toInt() ?? 0,
       overdueBooks: (json['overdueBooks'] as num?)?.toInt() ?? 0,
       totalReturned: (json['totalReturned'] as num?)?.toInt() ?? 0,

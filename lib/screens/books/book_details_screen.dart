@@ -47,15 +47,27 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
               Navigator.pop(ctx);
-              await widget.bookRepository.deleteBook(_book.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.successDeleted),
-                    backgroundColor: AppColors.accentGreen,
-                  ),
-                );
-                Navigator.pop(context);
+              try {
+                await widget.bookRepository.deleteBook(_book.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.successDeleted),
+                      backgroundColor: AppColors.accentGreen,
+                    ),
+                  );
+                  Navigator.pop(context, true);
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Delete failed: ${e.toString().replaceAll("ApiException: ", "").replaceAll("Exception: ", "")}'),
+                      backgroundColor: AppColors.error,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
               }
             },
             child: Text(l10n.deleteBook),
@@ -88,6 +100,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                 setState(() {
                   _book = updated;
                 });
+                await widget.bookRepository.getBooks();
               }
             },
           ),

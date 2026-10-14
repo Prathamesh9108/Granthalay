@@ -17,4 +17,5 @@ class AppRoutes {
   static const String overdueBooks = '/overdue-books';
   static const String reports = '/reports';
   static const String settings = '/settings';
+  static const String bulkImport = '/bulk-import';
 }

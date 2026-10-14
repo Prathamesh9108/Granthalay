@@ -20,6 +20,14 @@ class OverdueBooksScreen extends StatefulWidget {
 }
 
 class _OverdueBooksScreenState extends State<OverdueBooksScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.borrowingRepository.getAllRecords();
+    });
+  }
+
   void _confirmReturn(BorrowRecord record) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
@@ -34,11 +42,24 @@ class _OverdueBooksScreenState extends State<OverdueBooksScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await widget.borrowingRepository.returnBook(record.id);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.returnSuccess), backgroundColor: AppColors.accentGreen),
-                );
+              try {
+                await widget.borrowingRepository.returnBook(record.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.returnSuccess), backgroundColor: AppColors.accentGreen),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Return failed: ${e.toString().replaceAll("ApiException: ", "")}',
+                      ),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
               }
             },
             child: Text(l10n.confirm),

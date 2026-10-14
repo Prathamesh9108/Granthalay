@@ -9,13 +9,13 @@ import '../../widgets/custom_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   final LocaleProvider localeProvider;
-  final ApiService apiService;
+  final ApiService? apiService;
   final VoidCallback? onOpenDrawer;
 
   const SettingsScreen({
     super.key,
     required this.localeProvider,
-    required this.apiService,
+    this.apiService,
     this.onOpenDrawer,
   });
 
@@ -140,6 +140,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             const SizedBox(height: 16),
+
+
 
             // 2. Granthalay Details Card
             CustomCard(

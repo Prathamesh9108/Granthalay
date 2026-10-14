@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_routes.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../models/book.dart';
@@ -29,7 +28,6 @@ enum BookSortOption { title, author, code, availableCopies }
 
 class _BooksListScreenState extends State<BooksListScreen> {
   String _searchQuery = '';
-  String? _selectedCategory;
   AvailabilityFilter _availabilityFilter = AvailabilityFilter.all;
   final BookSortOption _sortOption = BookSortOption.title;
 
@@ -48,6 +46,8 @@ class _BooksListScreenState extends State<BooksListScreen> {
                 onPressed: widget.onOpenDrawer,
               )
             : null,
+
+
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'addBookFab',
@@ -73,15 +73,13 @@ class _BooksListScreenState extends State<BooksListScreen> {
                 book.authorEn.toLowerCase().contains(query) ||
                 book.category.toLowerCase().contains(query);
 
-            final matchesCategory = _selectedCategory == null || book.category == _selectedCategory;
-
             final matchesAvailability = switch (_availabilityFilter) {
               AvailabilityFilter.all => true,
               AvailabilityFilter.available => book.isAvailable,
               AvailabilityFilter.unavailable => !book.isAvailable,
             };
 
-            return matchesQuery && matchesCategory && matchesAvailability;
+            return matchesQuery && matchesAvailability;
           }).toList();
 
           // 2. Sorting
@@ -107,7 +105,9 @@ class _BooksListScreenState extends State<BooksListScreen> {
                 child: Column(
                   children: [
                     SearchField(
-                      hintText: l10n.searchBooksPlaceholder,
+                      hintText: locale.languageCode == 'mr'
+                          ? 'शीर्षक, लेखक किंवा कोडद्वारे शोधा...'
+                          : 'Search by title, author, or code...',
                       onChanged: (val) {
                         setState(() {
                           _searchQuery = val;
@@ -149,36 +149,34 @@ class _BooksListScreenState extends State<BooksListScreen> {
                               });
                             },
                           ),
-                          const SizedBox(width: 8),
-                          // Category Filter Dropdown Chip
-                          FilterChip(
-                            label: Text(
-                              _selectedCategory != null
-                                  ? _selectedCategory!.split(' ')[0]
-                                  : l10n.filterCategory,
-                            ),
-                            selected: _selectedCategory != null,
-                            onSelected: (_) => _showCategoryPicker(context),
-                          ),
-                          if (_selectedCategory != null) ...[
-                            const SizedBox(width: 4),
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 16),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: () {
-                                setState(() {
-                                  _selectedCategory = null;
-                                });
-                              },
-                            ),
-                          ],
+
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Books Count Bar
+              if (allBooks.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        filteredBooks.length == allBooks.length
+                            ? '${allBooks.length} Books'
+                            : '${filteredBooks.length} of ${allBooks.length} Books',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               // Books List
               Expanded(
@@ -192,10 +190,12 @@ class _BooksListScreenState extends State<BooksListScreen> {
                           children: [
                             EmptyState(
                               icon: Icons.menu_book_outlined,
-                              title: l10n.noRecentTransactions,
-                              subtitle: l10n.searchPersonNoResults,
-                              actionLabel: l10n.addBook,
-                              onAction: () => Navigator.pushNamed(context, AppRoutes.addEditBook),
+                              title: locale.languageCode == 'mr'
+                                  ? 'कोणतेही पुस्तक सापडले नाही'
+                                  : 'No books found',
+                              subtitle: locale.languageCode == 'mr'
+                                  ? 'कृपया शोध शब्द किंवा फिल्टर बदलून पहा.'
+                                  : 'Try adjusting your search query or filter.',
                             ),
                           ],
                         )
@@ -227,57 +227,7 @@ class _BooksListScreenState extends State<BooksListScreen> {
     );
   }
 
-  void _showCategoryPicker(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Text(
-                    l10n.filterCategory,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const Divider(),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: AppConstants.bookCategories.length,
-                    itemBuilder: (context, i) {
-                      final cat = AppConstants.bookCategories[i];
-                      final isSelected = _selectedCategory == cat;
-                      return ListTile(
-                        title: Text(cat),
-                        trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
-                        onTap: () {
-                          setState(() {
-                            _selectedCategory = cat;
-                          });
-                          Navigator.pop(ctx);
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+
 }
 
 class _BookCard extends StatelessWidget {
@@ -346,6 +296,24 @@ class _BookCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (book.isbn.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '#${book.isbn}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                     const Spacer(),
                     StatusBadge.availability(
                       isAvailable: book.isAvailable,
@@ -364,16 +332,18 @@ class _BookCard extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  book.displayAuthor(locale),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+                if (book.displayAuthor(locale).isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    book.displayAuthor(locale),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
