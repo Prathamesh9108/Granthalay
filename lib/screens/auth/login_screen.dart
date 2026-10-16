@@ -108,14 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         Container(
-                          width: 84,
-                          height: 84,
+                          width: 88,
+                          height: 88,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.white,
+                            shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.12),
-                                blurRadius: 12,
+                                color: AppColors.primary.withOpacity(0.18),
+                                blurRadius: 16,
                                 offset: const Offset(0, 4),
                               ),
                             ],
@@ -123,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           clipBehavior: Clip.antiAlias,
                           child: Image.asset(
                             'assets/granthalay_logo.png',
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -135,30 +136,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.libraryName,
+                        const SizedBox(height: 6),
+                        const Text(
+                          'श्रावकरत्न सप्तम प्रतिमाधारी\nवसंत दादाश्री जिनवाणी महाग्रंथालय',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondaryContainer.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            l10n.demoModeNotice,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondary,
-                            ),
+                            height: 1.35,
                           ),
                         ),
                       ],
@@ -271,17 +257,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                  Text(
-                    l10n.apiReadyNotice,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

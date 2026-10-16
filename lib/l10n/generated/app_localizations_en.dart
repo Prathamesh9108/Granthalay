@@ -375,8 +375,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No members found matching your search. Try another query.';
 
   @override
-  String get searchPersonHelperText =>
-      'Searching local demo records (will query Spring Boot REST API once connected).';
+  String get searchPersonHelperText => 'Searching local demo records.';
 
   @override
   String get historyTitle => 'Borrowing History';

@@ -38,7 +38,7 @@ class AppTheme {
       secondary: AppColors.secondary,
       onSecondary: Colors.white,
       secondaryContainer: AppColors.secondaryContainer,
-      onSecondaryContainer: Color(0xFF042F2E),
+      onSecondaryContainer: Color(0xFF451A03),
       error: AppColors.error,
       onError: Colors.white,
       surface: AppColors.surface,

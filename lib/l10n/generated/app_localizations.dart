@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @libraryName.
   ///
   /// In mr, this message translates to:
-  /// **'वसंत दादाश्री जिनवाणी महाग्रंथालय'**
+  /// **'श्रावकरत्न सप्तम प्रतिमाधारी\nवसंत दादाश्री जिनवाणी महाग्रंथालय'**
   String get libraryName;
 
   /// No description provided for @demoModeNotice.
@@ -803,7 +803,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchPersonHelperText.
   ///
   /// In mr, this message translates to:
-  /// **'स्थानिक डेमो नोंदी शोधत आहे (स्प्रिंग बूट API जोडल्यानंतर संपूर्ण सर्व्हर डेटा शोधला जाईल).'**
+  /// **'स्थानिक डेमो नोंदी शोधत आहे.'**
   String get searchPersonHelperText;
 
   /// No description provided for @historyTitle.

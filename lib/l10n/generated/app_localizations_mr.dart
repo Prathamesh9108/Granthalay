@@ -16,7 +16,8 @@ class AppLocalizationsMr extends AppLocalizations {
   String get appSubtitle => 'वाचनालय व्यवस्थापन प्रणाली';
 
   @override
-  String get libraryName => 'वसंत दादाश्री जिनवाणी महाग्रंथालय';
+  String get libraryName =>
+      'श्रावकरत्न सप्तम प्रतिमाधारी\nवसंत दादाश्री जिनवाणी महाग्रंथालय';
 
   @override
   String get demoModeNotice => 'डेमो मोड सक्रिय (स्थानिक डेटा)';
@@ -377,8 +378,7 @@ class AppLocalizationsMr extends AppLocalizations {
       'कोणताही सभासद सापडला नाही. कृपया वेगळा शब्द शोधा.';
 
   @override
-  String get searchPersonHelperText =>
-      'स्थानिक डेमो नोंदी शोधत आहे (स्प्रिंग बूट API जोडल्यानंतर संपूर्ण सर्व्हर डेटा शोधला जाईल).';
+  String get searchPersonHelperText => 'स्थानिक डेमो नोंदी शोधत आहे.';
 
   @override
   String get historyTitle => 'देवाणघेवाण इतिहास';

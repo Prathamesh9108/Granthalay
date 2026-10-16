@@ -2,7 +2,7 @@
   "@@locale": "mr",
   "appTitle": "ग्रंथालय",
   "appSubtitle": "वाचनालय व्यवस्थापन प्रणाली",
-  "libraryName": "वसंत दादाश्री जिनवाणी महाग्रंथालय",
+  "libraryName": "श्रावकरत्न सप्तम प्रतिमाधारी\nवसंत दादाश्री जिनवाणी महाग्रंथालय",
   "demoModeNotice": "डेमो मोड सक्रिय (स्थानिक डेटा)",
   "apiReadyNotice": "स्प्रिंग बूट API जोडणीसाठी तयार",
 
@@ -133,7 +133,7 @@
   "searchPersonSubtitle": "मराठी किंवा इंग्रजीत नाव, अथवा सभासद कोड टाईप करा",
   "searchPersonPlaceholder": "उदा. राहुल पाटील, Rahul Patil, M001...",
   "searchPersonNoResults": "कोणताही सभासद सापडला नाही. कृपया वेगळा शब्द शोधा.",
-  "searchPersonHelperText": "स्थानिक डेमो नोंदी शोधत आहे (स्प्रिंग बूट API जोडल्यानंतर संपूर्ण सर्व्हर डेटा शोधला जाईल).",
+  "searchPersonHelperText": "स्थानिक डेमो नोंदी शोधत आहे.",
 
   "historyTitle": "देवाणघेवाण इतिहास",
   "historyFilterAll": "सर्व व्यवहार",

@@ -107,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       l10n.marathiLanguage,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text('मराठी भाषा (मराठीत आकडे व अक्षरे)'),
+                    subtitle: const Text('मराठी भाषा'),
                     value: 'mr',
                     groupValue: currentLocale.languageCode,
                     activeColor: AppColors.primary,
@@ -152,15 +152,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Row(
                     children: [
                       Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                        width: 34,
+                        height: 34,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Image.asset(
                           'assets/granthalay_logo.png',
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -175,7 +175,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const Divider(height: 24),
-                  const _InfoItem(label: 'ग्रंथालय', value: 'वसंत दादाश्री जिनवाणी महाग्रंथालय'),
+                  const _InfoItem(
+                    label: 'ग्रंथालय',
+                    value: 'श्रावकरत्न सप्तम प्रतिमाधारी\nवसंत दादाश्री जिनवाणी महाग्रंथालय',
+                  ),
                   const _InfoItem(label: 'स्थापना', value: '18-06-2018'),
                   const _InfoItem(label: 'गाव', value: 'कोथळी'),
                   const _InfoItem(label: 'पत्ता', value: 'ता. शिरोळ जि. कोल्हापूर (महाराष्ट्र)'),
@@ -273,7 +276,12 @@ class _InfoItem extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                height: 1.35,
+              ),
             ),
           ),
         ],

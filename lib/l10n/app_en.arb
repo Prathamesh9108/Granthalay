@@ -133,7 +133,7 @@
   "searchPersonSubtitle": "Search by Marathi name, English name, or member code",
   "searchPersonPlaceholder": "e.g. राहुल पाटील, Rahul Patil, M001...",
   "searchPersonNoResults": "No members found matching your search. Try another query.",
-  "searchPersonHelperText": "Searching local demo records (will query Spring Boot REST API once connected).",
+  "searchPersonHelperText": "Searching local demo records.",
 
   "historyTitle": "Borrowing History",
   "historyFilterAll": "All Records",

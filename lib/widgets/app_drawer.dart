@@ -30,28 +30,32 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               decoration: const BoxDecoration(
-                color: AppColors.primary,
+                gradient: LinearGradient(
+                  colors: [Color(0xFFA2640A), Color(0xFF784107)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
+                      shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black26,
                           blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Image.asset(
                       'assets/granthalay_logo.png',
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -69,45 +73,14 @@ class AppDrawer extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          l10n.libraryName,
-                          maxLines: 1,
+                          'श्रावकरत्न सप्तम प्रतिमाधारी\nवसंत दादाश्री जिनवाणी महाग्रंथालय',
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.85),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: (apiService?.isDemoMode ?? false)
-                                ? AppColors.secondary.withOpacity(0.9)
-                                : const Color(0xFF2E7D32),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                (apiService?.isDemoMode ?? false)
-                                    ? Icons.info_outline_rounded
-                                    : Icons.cloud_done_rounded,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                (apiService?.isDemoMode ?? false)
-                                    ? l10n.demoModeNotice
-                                    : (localeProvider.isMarathi ? 'डेटाबेस जोडलेला (Live)' : 'Live Database Connected'),
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                            fontSize: 11,
+                            height: 1.25,
+                            color: Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
